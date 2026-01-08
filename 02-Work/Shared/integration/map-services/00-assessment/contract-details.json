@@ -1,0 +1,42 @@
+{
+  "requested": {
+    "pickup": {
+      "coordinate": {
+        "latitude": -6.3242,
+        "longitude": 106.3242
+      },
+      "address": "Jl. jalan 14"
+    },
+    "dropoff": {
+      "coordinate": {
+        "latitude": -6.3242,
+        "longitude": 106.3242
+      },
+      "address": "Jl. jalan 14"
+    }
+  },
+  "dropoff": {
+    "pickup": {
+      "coordinate": {
+        "latitude": -6.3242,
+        "longitude": 106.3242
+      },
+      "address": "Jl. jalan 14"
+    },
+    "dropoff": {
+      "coordinate": {
+        "latitude": -6.3242,
+        "longitude": 106.3242
+      },
+      "address": "Jl. jalan 14"
+    }
+  },
+  "vehicle_info": {},
+  "customer_info": {
+    "internal_id": "BBID123456",
+    "Name": "erik",
+    "phone": "34324322",
+    "email": "34l2mlk2m3@mail.bb"
+  },
+  "state:": 7
+}

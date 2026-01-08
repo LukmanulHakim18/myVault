@@ -1,0 +1,27 @@
+@startuml
+
+title **Set popular point from landmark***
+
+autoactivate on
+
+
+queue KAFKA
+control MapService
+entity GlobalFrequencyRepo
+control GMO
+database PostGISDB
+
+
+KAFKA -> MapService : Consume "endtrip" message
+   MapService -> GMO : Get landmark from pickup location.
+   return  Data landmark
+   alt pickup is in landmark
+      MapService -> GlobalFrequencyRepo : INSERT or UPDATE global frequency
+         GlobalFrequencyRepo -> PostGISDB : upsert global_location_frequency
+         return ok
+      return ok
+      else
+   end
+return ack
+
+@enduml

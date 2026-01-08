@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Obsidian Vault - Lukmanul Hakim</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #e94560;
+            --accent-secondary: #533483;
+            --success: #00d9a5;
+            --warning: #ffc107;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 30px;
+        }
+        
+        header h1 { font-size: 2em; margin-bottom: 10px; }
+        header p { color: var(--text-secondary); }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-card .number { font-size: 2em; font-weight: bold; color: var(--accent); }
+        .stat-card .label { color: var(--text-secondary); font-size: 0.9em; }
+        
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section h2 {
+            color: var(--accent);
+            border-bottom: 1px solid var(--bg-card);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .folder-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .folder-card:hover { transform: translateY(-3px); }
+        .folder-card h3 { margin-bottom: 10px; font-size: 1.1em; }
+        .folder-card ul { list-style: none; font-size: 0.9em; }
+        .folder-card li { padding: 5px 0; color: var(--text-secondary); }
+        .folder-card li::before { content: "📄 "; }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, var(--accent-secondary), var(--bg-card));
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .tag { 
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        
+        .tag.green { background: var(--success); color: #000; }
+        .tag.yellow { background: var(--warning); color: #000; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-card);
+        }
+        
+        th { color: var(--accent); }
+        
+        .progress-bar {
+            background: var(--bg-card);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            border-top: 1px solid var(--bg-card);
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            header h1 { font-size: 1.5em; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📚 Personal Knowledge Base</h1>
+        <p>Obsidian Vault - Lukmanul Hakim | IT Senior Engineer @ Bluebird Group</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Last updated: 3 Januari 2026</p>
+    </header>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number">21</div>
+            <div class="label">Total Notes</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">9</div>
+            <div class="label">Folders</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">5</div>
+            <div class="label">Active Projects</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">4</div>
+            <div class="label">Templates</div>
+        </div>
+    </div>
+
+    <!-- Work Section -->
+    <div class="section">
+        <h2>💼 02-Work - Technical Documentation</h2>
+        
+        <div class="highlight-box">
+            <h3>🔥 Current Focus: ID Generator System</h3>
+            <p>Two-Level ID Generation System untuk Web Reservasi & Rent Revamp MyBB</p>
+            <div style="margin-top: 10px;">
+                <span class="tag green">✅ RFC Complete</span>
+                <span class="tag green">✅ DB Schema</span>
+                <span class="tag green">✅ Go Implementation</span>
+                <span class="tag yellow">🔄 Training</span>
+            </div>
+        </div>
+        
+        <div class="folder-grid">
+            <div class="folder-card">
+                <h3>🏗️ Architecture/ID-Generator</h3>
+                <ul>
+                    <li>ID-Generator-Index.md</li>
+                    <li>ID-Generator-System-Overview.md</li>
+                    <li>ID-Generator-Database-Schema.md</li>
+                    <li>ID-Generator-API-Reference.md</li>
+                    <li>ID-Generator-Implementation-Guide.md</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🐹 Go-Programming</h3>
+                <ul>
+                    <li>go-programming-moc.md (Map of Content)</li>
+                    <li>Design Patterns (Creational, Structural, Behavioral)</li>
+                    <li>Concurrency Patterns</li>
+                    <li>Testing Strategies</li>
+                    <li>Microservices Patterns</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🚗 Transportation-Domain</h3>
+                <ul>
+                    <li>ID-Generator-Web-Reservasi-Rent-Revamp.md</li>
+                    <li>Booking Systems</li>
+                    <li>Routing Algorithms</li>
+                    <li>Fleet Management</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>📋 Technical-Specs</h3>
+                <ul>
+                    <li>/rfcs - Request for Comments</li>
+                    <li>/api-documentation</li>
+                    <li>/implementation-guides</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ID Generator Quick Reference -->
+    <div class="section">
+        <h2>🔑 ID Generator - Quick Reference</h2>
+        <table>
+            <tr>
+                <th>ID Type</th>
+                <th>Format</th>
+                <th>Example</th>
+                <th>Recognition</th>
+            </tr>
+            <tr>
+                <td><strong>Booking ID</strong></td>
+                <td>CCT-TTTTTHHHHHHHHH (18 chars)</td>
+                <td>MYS-K8F2GABCD1234</td>
+                <td>3 chars before dash</td>
+            </tr>
+            <tr>
+                <td><strong>Order ID</strong></td>
+                <td>CCPP-TTTTTHHHHHHHHH (18 chars)</td>
+                <td>MYBA-K8F2GABCD5678</td>
+                <td>4 chars before dash</td>
+            </tr>
+        </table>
+        
+        <div style="margin-top: 15px;">
+            <h4>Channel Codes:</h4>
+            <span class="tag">MY = MyBB</span>
+            <span class="tag">WB = Web Reservasi</span>
+            <span class="tag">CR = Corporate</span>
+            <span class="tag">CT = Call Center</span>
+            <span class="tag">WA = WhatsApp</span>
+        </div>
+    </div>
+
+
+    <!-- Personal Finance Section -->
+    <div class="section">
+        <h2>💰 07-Personal - Finance Dashboard</h2>
+        
+        <div class="highlight-box">
+            <h3>🎉 Promosi: IT Senior Engineer 1 (Desember 2025)</h3>
+            <table>
+                <tr><td>Grade</td><td><strong>15-1</strong></td></tr>
+                <tr><td>Gaji Bersih (Des 2025)</td><td><strong>Rp 19,361,445</strong></td></tr>
+                <tr><td>Gaji Pokok</td><td>Rp 13,700,000</td></tr>
+                <tr><td>Insentif Fungsional</td><td>Rp 3,000,000</td></tr>
+                <tr><td>Data Historical</td><td>31 bulan (Jun 2023 - Des 2025)</td></tr>
+            </table>
+        </div>
+        
+        <h4>🎯 Financial Goals</h4>
+        <table>
+            <tr>
+                <th>Goal</th>
+                <th>Target</th>
+                <th>Progress</th>
+            </tr>
+            <tr>
+                <td>🛡️ Emergency Fund</td>
+                <td>Rp 60-72 juta (6 bulan)</td>
+                <td>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+                </td>
+            </tr>
+            <tr>
+                <td>🏍️ Kawasaki ZX-25R</td>
+                <td>Rp 130,000,000</td>
+                <td>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Life Goals Section -->
+    <div class="section">
+        <h2>🎯 Life Goals - Rencana 20 Tahun Kedepan</h2>
+        
+        <div class="folder-grid">
+            <div class="folder-card">
+                <h3>🏠 Bisnis: Rumah Burung Walet</h3>
+                <ul>
+                    <li>Suhu optimal: 26-28°C</li>
+                    <li>Kelembaban: 90-95%</li>
+                    <li>Sirip kayu: Sengon, Meranti</li>
+                    <li>Tips kebersihan & maintenance</li>
+                    <li>Referensi YouTube tersedia</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>💼 Financial Freedom</h3>
+                <ul>
+                    <li>Passive income ≥ pengeluaran</li>
+                    <li>Belajar investasi (saham, reksa dana)</li>
+                    <li>Diversifikasi portofolio</li>
+                    <li>Emergency fund 6-12 bulan</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🛒 Bisnis: Toko Online</h3>
+                <ul>
+                    <li>Merchandise for Programmers</li>
+                    <li>Dokumen di Google Drive</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🏍️ Wishlist</h3>
+                <ul>
+                    <li>Kawasaki ZX-25R (~Rp 130 juta)</li>
+                    <li>4-silinder inline 250cc</li>
+                    <li>Quickshifter & Traction Control</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vault Structure -->
+    <div class="section">
+        <h2>📁 Vault Structure</h2>
+        <div class="folder-grid">
+            <div class="folder-card">
+                <h3>📥 00-Inbox</h3>
+                <ul><li>Catatan cepat & ide belum diproses</li></ul>
+            </div>
+            <div class="folder-card">
+                <h3>📋 01-Projects</h3>
+                <ul>
+                    <li>/Active - Proyek berjalan</li>
+                    <li>/On-Hold - Ditunda</li>
+                    <li>/Completed - Selesai</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>💼 02-Work</h3>
+                <ul>
+                    <li>/Architecture</li>
+                    <li>/Go-Programming</li>
+                    <li>/Technical-Specs</li>
+                    <li>/Transportation-Domain</li>
+                    <li>/Code-Reviews</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>📚 03-Learning</h3>
+                <ul>
+                    <li>/Books - Notes buku</li>
+                    <li>/Courses - Materi kursus</li>
+                    <li>/Articles - Artikel menarik</li>
+                    <li>/Tech-Talks - Conference notes</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🔧 04-Resources</h3>
+                <ul>
+                    <li>/Templates (4 templates)</li>
+                    <li>/Tools</li>
+                    <li>/References</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>👥 05-Team</h3>
+                <ul>
+                    <li>/Meetings (standups, sprint, retro)</li>
+                    <li>/Knowledge-Sharing</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🎓 06-Career</h3>
+                <ul>
+                    <li>Achievements</li>
+                    <li>Skills Matrix</li>
+                    <li>Performance Reviews</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🏠 07-Personal</h3>
+                <ul>
+                    <li>/Finance - Dashboard keuangan</li>
+                    <li>/Life-Goals - Rencana masa depan</li>
+                    <li>/Health, /Hobbies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Templates Section -->
+    <div class="section">
+        <h2>📝 Available Templates</h2>
+        <table>
+            <tr>
+                <th>Template</th>
+                <th>Location</th>
+                <th>Use Case</th>
+            </tr>
+            <tr>
+                <td>📅 Daily Note Template</td>
+                <td>04-Resources/Templates/</td>
+                <td>Daily standup & task tracking</td>
+            </tr>
+            <tr>
+                <td>🔍 Code Review Template</td>
+                <td>04-Resources/Templates/</td>
+                <td>PR review checklist</td>
+            </tr>
+            <tr>
+                <td>📋 Meeting Notes Template</td>
+                <td>04-Resources/Templates/</td>
+                <td>Meeting documentation</td>
+            </tr>
+            <tr>
+                <td>📄 RFC Template</td>
+                <td>04-Resources/Templates/</td>
+                <td>Technical proposals</td>
+            </tr>
+            <tr>
+                <td>💰 Weekly Finance Template</td>
+                <td>07-Personal/Finance/Templates/</td>
+                <td>Weekly expense tracking</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Go Programming Highlights -->
+    <div class="section">
+        <h2>🐹 Go Programming - Key Topics</h2>
+        <div class="folder-grid">
+            <div class="folder-card">
+                <h3>🎨 Design Patterns</h3>
+                <ul>
+                    <li>Creational: Singleton, Factory, Builder</li>
+                    <li>Structural: Adapter, Decorator, Facade</li>
+                    <li>Behavioral: Strategy, Observer, Command</li>
+                    <li>Go-Specific: Functional Options, Worker Pool</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>⚡ Concurrency</h3>
+                <ul>
+                    <li>Goroutines & Channels</li>
+                    <li>sync package (Mutex, WaitGroup)</li>
+                    <li>Context cancellation</li>
+                    <li>Worker pools & Pipelines</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🧪 Testing</h3>
+                <ul>
+                    <li>Table-driven tests</li>
+                    <li>Mocking (gomock, testify)</li>
+                    <li>Benchmarking</li>
+                    <li>Fuzz testing (Go 1.18+)</li>
+                </ul>
+            </div>
+            <div class="folder-card">
+                <h3>🚀 Microservices</h3>
+                <ul>
+                    <li>Circuit Breaker</li>
+                    <li>Retry with Backoff</li>
+                    <li>gRPC & REST</li>
+                    <li>Distributed Tracing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section">
+        <h2>⚡ Quick Actions & Reminders</h2>
+        <div class="highlight-box">
+            <h4>📅 Daily Workflow</h4>
+            <ol style="margin-left: 20px; color: var(--text-secondary);">
+                <li>Open Daily Note (Calendar plugin)</li>
+                <li>Review Inbox & process notes</li>
+                <li>Update project progress</li>
+                <li>Log learnings</li>
+            </ol>
+        </div>
+        <div class="highlight-box">
+            <h4>📆 Weekly Review Checklist</h4>
+            <ol style="margin-left: 20px; color: var(--text-secondary);">
+                <li>Review active projects</li>
+                <li>Process inbox to zero</li>
+                <li>Update goals progress</li>
+                <li>Archive completed items</li>
+                <li>Plan next week priorities</li>
+            </ol>
+        </div>
+    </div>
+
+    <footer>
+        <p>📚 Personal Knowledge Base - Obsidian Vault</p>
+        <p>Lukmanul Hakim | IT Senior Engineer @ Bluebird Group</p>
+        <p style="margin-top: 10px;">
+            <span class="tag">Go</span>
+            <span class="tag">Architecture</span>
+            <span class="tag">Microservices</span>
+            <span class="tag">Transportation</span>
+        </p>
+        <p style="margin-top: 15px; font-size: 0.8em;">
+            Generated: 3 Januari 2026 | Sync via Google Drive
+        </p>
+    </footer>
+
+</body>
+</html>

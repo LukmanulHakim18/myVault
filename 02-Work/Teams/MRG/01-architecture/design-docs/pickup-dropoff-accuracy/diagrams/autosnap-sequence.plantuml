@@ -1,0 +1,41 @@
+@startuml
+
+title **Get auto snap**
+
+actor       MobileUser   as MU
+boundary    APIGateway   as AG
+control     AutoSnapUsecase as UC
+entity      FavoriteRepo as FR
+entity      FrequencyRepo as FQR
+entity      PopularRepo  as PR
+entity      MapService  as MAP
+database    PostGISDB    as DB
+
+MU -> AG : Request /autosnap (lat, lng, user_id, type)
+   AG -> UC : Validate & process request
+      UC -> FR : Get favorite locations (radius 100m)
+         FR -> DB : SELECT ... FROM favorite_locations WHERE ...
+         DB --> FR : Result
+      FR --> UC : Favorite locations
+
+      UC ----> UC : Append data favorite locations to list result location
+
+      UC -> FQR : Get frequent locations (radius 100m)
+         FQR -> DB : SELECT ... FROM user_location_frequency WHERE ...
+         DB --> FQR : Result
+      FQR --> UC : Frequent locations
+
+      UC ----> UC : Append data frequent locations to list result location
+
+alt Data list result location not nil
+      UC ----> UC : select based on periority
+   UC -> AG : Build ordered list of recommendations
+AG --> MU : Return recommendation list
+end
+      UC -> MAP : Refers geo code
+      MAP --> UC : Popular location
+
+   UC -> AG : Build ordered list of recommendations
+AG --> MU : Return recommendation list
+
+@enduml
