@@ -27,16 +27,44 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "02-Work/Teams/MRG/01-architecture/MRG SPOF Assessment & Mitigation Strategy.md",
+                "file": "02-Work/Teams/MRG/01-architecture/design-docs/BBD Job ID Retrieval - Implementation Guide.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MRG SPOF Assessment & Mitigation Strategy"
+              "title": "BBD Job ID Retrieval - Implementation Guide"
+            }
+          },
+          {
+            "id": "0e206483a24d4b11",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "🚀 GCP-HWC Migration Hub.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "🚀 GCP-HWC Migration Hub"
+            }
+          },
+          {
+            "id": "79a65bc597bb4b71",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/dependencies.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "dependencies"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -68,7 +96,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tech debt",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -93,7 +121,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 604.5
+    "width": 325.5
   },
   "right": {
     "id": "ce77afcada3a07e3",
@@ -195,44 +223,44 @@
       "bases:Create new base": false
     }
   },
-  "active": "e336a8a16848247b",
+  "active": "79a65bc597bb4b71",
   "lastOpenFiles": [
-    "02-Work/Teams/MRG/01-architecture/MRG-SPOF-Documentation-Hub.md",
-    "02-Work/Teams/MRG/01-architecture/MRG SPOF Assessment & Mitigation Strategy.md",
-    "02-Work/Teams/MRG/01-architecture/design-docs/Patroni-HA-Setup-Guide.md",
-    "02-Work/Teams/MRG/01-architecture/design-docs/Circuit-Breaker-Implementation-Guide.md",
-    "02-Work/Teams/MRG/05-runbooks/incident-response/RUNBOOK-TPG-BBD-Down.md",
-    "02-Work/Teams/MRG/05-runbooks/incident-response/RUNBOOK-Order-Orchestrator-Down.md",
-    "02-Work/Teams/MRG/05-runbooks/incident-response/RUNBOOK-Database-Failover.md",
-    "02-Work/Teams/MRG/02-services/orderorchestrator/spof-deep-analysis.md",
-    "00-Inbox/SPOF assessment pada mrg.md",
-    "02-Work/Teams/MRG/01-architecture/SPOF Assessment 2026-01 - Order Detail Optimization.md",
-    "02-Work/Teams/MRG/02-services/orderorchestrator/dependencies.md",
-    "02-Work/Teams/MRG/02-services/orderorchestrator/README.md",
-    "02-Work/Teams/MRG/01-architecture/single-point-of-failure-analysis.md",
-    "00-Inbox/Reserved Budget eCV.md",
-    "Untitled.md",
-    "02-Work/Teams/MRG/02-services/paymentprocessor/api-reference.md",
-    "02-Work/Teams/MRG/02-services/mybb-ho-gateway/dependencies.md",
-    "02-Work/Teams/MRG/02-services/mybb-ho-gateway/api-reference.md",
-    "02-Work/Teams/MRG/02-services/mybb-ho-gateway/README.md",
-    "02-Work/Teams/MRG/02-services/mybb-ho-gateway",
-    "02-Work/Teams/MRG/02-services/webhookforwarder/README.md",
-    "02-Work/Teams/MRG/02-services/webhookforwarder/02-api-reference.md",
-    "02-Work/Teams/MRG/02-services/webhookforwarder/01-overview.md",
-    "02-Work/Teams/MRG/02-services/webhookforwarder",
-    "02-Work/Teams/MRG/02-services/top/04-payment-flows.md",
-    "02-Work/Teams/MRG/02-services/top/03-state-machine.md",
-    "02-Work/Teams/MRG/02-services/top/02-api-reference.md",
-    "02-Work/Teams/MRG/02-services/top/01-overview.md",
-    "02-Work/Teams/MRG/02-services/top",
-    "02-Work/Teams/MRG/02-services/orderquery",
-    "02-Work/Teams/MRG/02-services/notificationcenter",
-    "02-Work/Teams/MRG/02-services/paymentprocessor",
-    "02-Work/Teams/UPG/02-services/paymentprocessor",
-    "02-Work/Teams/MRG/02-services/orderorchestrator",
-    "02-Work/Teams/MRG/02-services/taxipartnergateway",
-    "02-Work/Teams/MRG/02-services/fds",
+    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/dependencies.md",
+    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/legacy-flows.md",
+    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/api-reference.md",
+    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/dependencies.md",
+    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/README.md",
+    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go",
+    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/api-reference.md",
+    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/kafka-topics.md",
+    "02-Work/Deployments/postmortems/2026-01-29-postmortem-cc-preauth.md",
+    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/order-flows.md",
+    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/README.md",
+    "02-Work/Teams/MRG/02-services/mybb-order-processing-go",
+    "02-Work/Deployments/2026-01-deployment-log.md",
+    "02-Work/Deployment Overtime Index.md",
+    "02-Work/Architecture-Office/guidelines/Developer-Standardization-Guidelines.md",
+    "02-Work/Deployments/postmortems",
+    "02-Work/Teams/MRG/02-services/authservice/dependencies.md",
+    "02-Work/Teams/MRG/02-services/authservice/README.md",
+    "02-Work/Teams/MRG/02-services/authservice/authentication-flows.md",
+    "02-Work/Teams/MRG/02-services/authservice/api-reference.md",
+    "2025-01-12-Traffic-Spike-Analysis.md",
+    "🚀 GCP-HWC Migration Hub.md",
+    "02-Resources/Agent-Configs/Trading-Robot/pm-agent.md",
+    "OBSIDIAN-MCP-RULES.md",
+    "README.md",
+    "VAULT-STRUCTURE-INDEX.md",
+    "VAULT-MASTER-INDEX.md",
+    "dashboard.md",
+    "_INDEX.md",
+    "02-Work/Deployments",
+    "Work/Overtime",
+    "02-Work/Meetings",
+    "02-Work/Teams/MRG/01-architecture/design-docs/reserved-budget-ecv",
+    "Work/Meetings",
+    "Work",
+    "02-Work/Teams/MRG/02-services/trackerservice",
     "Untitled.canvas"
   ]
 }

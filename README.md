@@ -8,18 +8,26 @@ Selamat datang di Personal Knowledge Base Anda! Vault ini dirancang khusus untuk
 Tempat menampung catatan cepat dan ide yang belum diproses. Review folder ini secara berkala dan pindahkan ke folder yang sesuai.
 
 ### 01-Projects
-Manajemen proyek dengan 3 status:
+Manajemen proyek **PERSONAL** (di luar Bluebird) dengan 3 status:
 - **Active**: Proyek yang sedang berjalan
 - **On-Hold**: Proyek yang ditunda sementara
 - **Completed**: Proyek yang sudah selesai
 
+> ⚠️ **PENTING:** Dokumentasi kerja Bluebird masuk ke `02-Work/`, BUKAN di sini!
+
 ### 02-Work
-Dokumentasi pekerjaan utama:
+Dokumentasi pekerjaan Bluebird:
 - **Architecture**: Design patterns, system architecture
-- **Go-Programming**: Best practices, code snippets Go
-- **Transportation-Domain**: Domain knowledge transportasi
-- **Technical-Specs**: RFC, implementation guides, API docs
+- **Architecture-Office**: Org-wide architecture standards
 - **Code-Reviews**: Review notes dan checklist
+- **Deployments**: ⭐ Deployment overtime tracking
+- **Go-Programming**: Best practices, code snippets Go
+- **Meetings**: Meeting notes, action items
+- **Shared**: Cross-team documentation
+- **Teams/MRG**: Meta Reservation Gateway docs
+- **Teams/UPG**: Universal Payment Gateway docs
+- **Technical-Specs**: RFC, implementation guides, API docs
+- **Transportation-Domain**: Domain knowledge transportasi
 
 ### 03-Learning
 Pembelajaran dan development:
@@ -53,6 +61,8 @@ Catatan pribadi:
 ### 08-Archive
 Arsip untuk file lama yang tidak aktif lagi
 
+---
+
 ## 🚀 Quick Start
 
 1. **Install Obsidian** dari https://obsidian.md
@@ -67,6 +77,9 @@ Arsip untuk file lama yang tidak aktif lagi
 
 4. **Mulai dengan Dashboard**: Buka `dashboard.md`
 5. **Gunakan Templates**: Tersedia di `04-Resources/Templates/`
+6. **Baca Master Index**: Buka `VAULT-MASTER-INDEX.md` untuk struktur lengkap
+
+---
 
 ## 📝 Workflow yang Disarankan
 
@@ -88,6 +101,8 @@ Arsip untuk file lama yang tidak aktif lagi
 3. Reflect on achievements
 4. Set new goals
 
+---
+
 ## 🔗 Linking Strategy
 
 Gunakan **[[wiki-style links]]** untuk menghubungkan notes:
@@ -95,15 +110,21 @@ Gunakan **[[wiki-style links]]** untuk menghubungkan notes:
 - `[[note-name|alias]]` - Link dengan alias
 - `[[note-name#heading]]` - Link ke heading tertentu
 
+---
+
 ## 🏷️ Tagging Strategy
 
 Gunakan tags konsisten:
-- `#project` - Project-related
+- `#project` - Project-related (personal projects)
+- `#mrg` - MRG team work
+- `#upg` - UPG team work
 - `#go` - Go programming
 - `#architecture` - Architecture design
 - `#rfc` - Request for Comments
 - `#meeting` - Meeting notes
 - `#learning` - Learning materials
+
+---
 
 ## 💡 Tips
 
@@ -113,10 +134,18 @@ Gunakan tags konsisten:
 4. **Backup regularly** - Gunakan Obsidian Git plugin
 5. **Tag dengan bijak** - Memudahkan pencarian
 
-## 📊 Dashboard & MOC
+---
 
-- `dashboard.md` - Overview semua aktivitas
+## 📊 Dashboard & Navigation
+
+- `dashboard.md` - Overview semua aktivitas & operational command center
+- `VAULT-MASTER-INDEX.md` - ⭐ **Master index struktur vault (single source of truth)**
 - `02-Work/Go-Programming/go-programming-moc.md` - Map of Content untuk Go
+- `02-Work/Deployments/README.md` - Deployment workflow guide
+
+> **Untuk Claude:** Baca `VAULT-MASTER-INDEX.md` SEBELUM membuat/memindahkan file apapun!
+
+---
 
 ## 🛠️ Maintenance
 
@@ -125,10 +154,15 @@ Gunakan tags konsisten:
 - **Monthly**: Archive old notes, update structures
 - **Quarterly**: Backup, review overall organization
 
+---
+
 ## 📞 Support
 
 Jika ada pertanyaan atau saran untuk improvement struktur ini, silakan diskusikan dengan tim atau update README ini.
 
 ---
-*Last updated: {{date}}*
-*Created by: Claude AI Assistant*
+
+**Version:** 2.0  
+**Last Updated:** 2026-01-28  
+**Created By:** Claude AI Assistant  
+**Maintained By:** Lukmanul Hakim
