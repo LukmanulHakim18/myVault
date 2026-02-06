@@ -1,8 +1,8 @@
 # 📅 January 2026 - Deployment Log
 
 **Month:** January 2026  
-**Total Hours:** 4.5 hours  
-**Total Deployments:** 2  
+**Total Hours:** 8.5 hours  
+**Total Deployments:** 3  
 
 ---
 
@@ -10,9 +10,9 @@
 
 | Team | Deployments | Hours | Success | Incident |
 |------|------------|-------|---------|----------|
-| UPG | 1 | 1.5 | 1 | 0 |
+| UPG | 2 | 5.5 | 2 | 0 |
 | MRG | 1 | 3.0 | 0 | 1 |
-| **TOTAL** | **2** | **4.5 hours** | **1** | **1** |
+| **TOTAL** | **3** | **8.5 hours** | **2** | **1** |
 
 ---
 
@@ -62,17 +62,36 @@
 
 ---
 
+### 2026-01-29: Cross Payment Deployment
+- **Team:** UPG
+- **Feature:** Cross Payment Enhancement
+- **Scope:** 
+  - Service MPG2
+  - Service Card Payment
+  - Service Mrg Gateway
+  - Bugfix CC CP
+  - Add Voucher ID
+  - Bugfix tcash error handling
+- **Participating:** ✅ Yes
+- **Start Time:** 22:00
+- **End Time:** 02:00 (+1 day)
+- **Duration:** 4 hours
+- **Outcome:** ✅ SUCCESS
+- **Notes:** All services deployed successfully, no incidents reported
+
+---
+
 ## Monthly Statistics
 
 | Metric | Value |
 |--------|-------|
 | **Working Days** | 23 (excl. weekends) |
-| **Deployments Worked** | 2 |
-| **Total Overtime Hours** | 4.5 hours |
-| **Average Hours per Deployment** | 2.25 hours |
-| **Night Deployments (>17:00)** | 2 |
+| **Deployments Worked** | 3 |
+| **Total Overtime Hours** | 8.5 hours |
+| **Average Hours per Deployment** | 2.83 hours |
+| **Night Deployments (>17:00)** | 3 |
 | **Weekend Deployments** | 0 |
-| **Success Rate** | 50 % |
+| **Success Rate** | 67% |
 | **Incidents** | 1 (P2) |
 
 ---

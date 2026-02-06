@@ -1,8 +1,8 @@
 # 📊 Monthly Deployment Overtime - 2026
 
 **Year:** 2026  
-**Total Hours:** 4.5 hours  
-**Total Deployments:** 2  
+**Total Hours:** 8.5 hours  
+**Total Deployments:** 3  
 
 ---
 
@@ -10,8 +10,8 @@
 
 | Month | Deployments | Hours | Success | Incident | Success Rate |
 |-------|-------------|-------|---------|----------|--------------|
-| January | 2 | 4.5 | 1 | 1 | 50 % |
-| February | - | - | - | - | - |
+| January | 3 | 8.5 | 2 | 1 | 67% |
+| February | 1 | TBD | - | - | TBD (ongoing) |
 | March | - | - | - | - | - |
 | April | - | - | - | - | - |
 | May | - | - | - | - | - |
@@ -22,7 +22,7 @@
 | October | - | - | - | - | - |
 | November | - | - | - | - | - |
 | December | - | - | - | - | - |
-| **TOTAL** | **2** | **4.5 hours** | **1** | **1** | **50 %** |
+| **TOTAL** | **3** | **8.5 hours** | **2** | **1** | **67%** |
 
 ---
 
@@ -30,17 +30,17 @@
 
 | Team | Total Deployments | Total Hours | Success Rate |
 |------|------------------|-------------|--------------|
-| UPG | 1 | 1.5 | 100 % |
-| MRG | 1 | 3.0 | 0 % (incident) |
+| UPG | 2 | 5.5 | 100% |
+| MRG | 1 | 3.0 | 0% (incident) |
 
 ---
 
 ## Quarterly Summary
 
 ### Q1 2026 (Jan-Mar)
-- **Deployments:** 2
-- **Hours:** 4.5 hours
-- **Success Rate:** 50 %
+- **Deployments:** 3
+- **Hours:** 8.5 hours
+- **Success Rate:** 67%
 - **Incidents:** 1 (P2)
 
 ### Q2 2026 (Apr-Jun)
@@ -63,3 +63,4 @@
 ## 🔗 Related
 - [[deployment-overtime-summary]] (Master Dashboard)
 - [[2026-01-deployment-log]] (January 2026)
+- [[2026-02-deployment-log]] (February 2026)
