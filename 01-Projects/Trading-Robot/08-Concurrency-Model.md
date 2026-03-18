@@ -1,376 +1,526 @@
----
-tags:
-  - trading
-  - concurrency
-  - architecture
-  - scaling
-created: '2026-01-20'
----
 # Concurrency Model
 
-## 1. Design Principles
+**Architecture:** Single-Account per Container  
+**Concurrency:** Container-level (Horizontal Scaling)  
+**Design:** No internal concurrency needed
+
+---
+
+## 1. Design Philosophy
+
+```mermaid
+flowchart LR
+    subgraph OLD["❌ OLD: Multi-Account per Robot"]
+        O1["Complex<br/>Concurrency"]
+        O2["Goroutine<br/>per Account"]
+        O3["Shared<br/>State"]
+        O4["Account<br/>Switching"]
+    end
+    
+    subgraph NEW["✅ NEW: Single-Account per Container"]
+        N1["No Internal<br/>Concurrency"]
+        N2["1 Goroutine<br/>per Container"]
+        N3["Isolated<br/>State"]
+        N4["No Account<br/>Switching"]
+    end
+    
+    OLD -->|"Simplified to"| NEW
+```
+
+**Key Principle:**
+> **1 Robot = 1 Account = 1 Container = Sequential Execution**
+
+---
+
+## 2. Container-Level Concurrency
 
 ```mermaid
 flowchart TB
-    subgraph PRINCIPLES["🎯 Design Principles"]
-        P1["1️⃣ Account = Independent Worker"]
-        P2["2️⃣ Config-driven (no code change)"]
-        P3["3️⃣ Horizontal scaling"]
-        P4["4️⃣ Multi-broker support"]
+    subgraph ORCHESTRATOR["🎛️ Container Orchestrator (Docker/K8s)"]
+        direction LR
+        SCALE["Horizontal Scaling"]
     end
+    
+    subgraph CONTAINERS["Containers (Running in Parallel)"]
+        C1["Container 1<br/>ACC_001<br/>Sequential"]
+        C2["Container 2<br/>ACC_002<br/>Sequential"]
+        C3["Container 3<br/>ACC_003<br/>Sequential"]
+        CN["Container N<br/>ACC_N<br/>Sequential"]
+    end
+    
+    ORCHESTRATOR --> C1 & C2 & C3 & CN
+    
+    style C1 fill:#90EE90
+    style C2 fill:#90EE90
+    style C3 fill:#90EE90
+    style CN fill:#90EE90
 ```
 
-| Principle | Meaning |
-|-----------|---------|
-| Account = Worker | Setiap akun jalan sebagai goroutine independen |
-| Config-driven | Tambah akun = tambah config, bukan ubah code |
-| Horizontal scaling | 1 akun atau 100 akun, logic sama |
-| Multi-broker | Support Stockbit, IPOT, Ajaib, dll |
+**Concurrency Pattern:**
+- **Inter-Container:** Parallel (managed by Docker/K8s)
+- **Intra-Container:** Sequential (single goroutine)
 
 ---
 
-## 2. Operating Schedule
+## 3. Robot Execution Model
+
+### Per Container (Sequential)
+
+```mermaid
+stateDiagram-v2
+    [*] --> INIT
+    
+    INIT --> VALIDATE_SESSION : Load Config
+    VALIDATE_SESSION --> LOGIN : Session Invalid
+    VALIDATE_SESSION --> PULL_TASKS : Session Valid
+    
+    LOGIN --> PIN_VALIDATION : Login Success
+    PIN_VALIDATION --> PULL_TASKS : PIN Valid
+    
+    PULL_TASKS --> IDLE : No Tasks
+    PULL_TASKS --> EXECUTE_TASK : Task Available
+    
+    EXECUTE_TASK --> MONITOR_ORDER : Order Submitted
+    MONITOR_ORDER --> MONITOR_ORDER : Check Status (every 10s)
+    MONITOR_ORDER --> REPORT_EVENT : TP/SL Hit
+    MONITOR_ORDER --> PULL_TASKS : Order Complete
+    
+    REPORT_EVENT --> PULL_TASKS : Event Reported
+    
+    IDLE --> PULL_TASKS : Wait 5s
+    
+    PULL_TASKS --> EOD_REPORT : 16:00 (EOD)
+    EOD_REPORT --> [*] : Robot Sleep
+```
+
+**Flow:**
+1. Validate session (login + PIN)
+2. Poll tasks from server
+3. Execute 1 task at a time (sequential)
+4. Monitor order status
+5. Report events
+6. Repeat
+
+**No Parallelism Needed:**
+- Hanya 1 account per robot
+- Task execution sequential
+- Order monitoring sequential
+
+---
+
+## 4. Operating Schedule
 
 ```mermaid
 gantt
-    title Robot Operating Schedule (WIB)
+    title Robot Operating Schedule (WIB) - Per Container
     dateFormat HH:mm
     axisFormat %H:%M
     
     section Robot
-    Setup & Login Check    :active, setup, 08:45, 15min
+    Setup & Session Check  :active, setup, 08:45, 15min
     Trading Active         :crit, trading, 09:00, 7h
     EOD Reporting          :active, eod, 16:00, 15min
+    Robot Sleep            :done, sleep, 16:15, 16h30min
     
     section Market
+    Pre-Market             :08:45, 15min
     Session 1              :09:00, 3h
     Lunch Break            :12:00, 1h30min
     Session 2              :13:30, 2h30min
+    Post-Market            :16:00, 15min
 ```
 
 | Phase | Time | Duration | Activity |
 |-------|------|----------|----------|
-| **Setup** | 08:45 - 09:00 | 15 min | Login check, pull tasks, prepare |
-| **Trading** | 09:00 - 16:00 | 7 hours | Submit orders, monitor TP/CL |
-| **EOD Report** | 16:00 - 16:15 | 15 min | Report unmatched & expired |
+| **Setup** | 08:45 - 09:00 | 15 min | Session validation, pull initial tasks |
+| **Trading** | 09:00 - 16:00 | 7 hours | Execute tasks, monitor orders |
+| **EOD Report** | 16:00 - 16:15 | 15 min | Report unmatched/expired orders |
+| **Sleep** | 16:15 - 08:45 | ~16.5 hours | Robot idle, no polling |
 
 ---
 
-## 3. Architecture
+## 5. Task Execution Flow
+
+### Sequential Execution Pattern
 
 ```mermaid
-flowchart TB
-    CONFIG[("📄 Config<br/>accounts.json")]
-    TASKS[("📋 Tasks<br/>from Server")]
+sequenceDiagram
+    participant R as Robot Engine
+    participant API as Owner Server
+    participant B as Browser
+    participant W as Web UI
     
-    subgraph ORCHESTRATOR["🎛️ ORCHESTRATOR"]
-        SCHED["Scheduler"]
-        POOL["Worker Pool"]
-        STATE[("State Store")]
+    loop Every 5s (During Market Hours)
+        R->>API: Poll tasks (account_id)
+        API-->>R: [Task 1, Task 2, Task 3]
+        
+        Note over R: Execute Task 1
+        R->>B: Open symbol page
+        B->>W: Navigate
+        R->>B: Fill form + submit
+        B->>W: Submit order
+        R->>API: Report order created
+        
+        Note over R: Monitor Task 1
+        loop Every 10s
+            R->>B: Check order status
+            alt TP/SL Hit
+                R->>API: Report event
+                Note over R: Task 1 Complete
+            end
+        end
+        
+        Note over R: Execute Task 2
+        Note over R: (Same pattern)
+        
+        Note over R: Execute Task 3
+        Note over R: (Same pattern)
     end
-    
-    subgraph WORKERS["👷 WORKERS (Goroutines)"]
-        W1["Worker 1<br/>ACC_01<br/>(Stockbit)"]
-        W2["Worker 2<br/>ACC_02<br/>(IPOT)"]
-        WN["Worker N<br/>ACC_N<br/>(Ajaib)"]
-    end
-    
-    subgraph BROWSERS["🌐 CHROMIUM PROFILES"]
-        B1["Profile 1"]
-        B2["Profile 2"]
-        BN["Profile N"]
-    end
-    
-    subgraph BROKERS["🏦 BROKER WEB UI"]
-        BR1["Stockbit"]
-        BR2["IPOT"]
-        BRN["Ajaib"]
-    end
-    
-    REPORTER["📡 Event Reporter"]
-    
-    CONFIG --> SCHED
-    TASKS --> SCHED
-    SCHED --> POOL
-    POOL --> W1 & W2 & WN
-    W1 --> B1 --> BR1
-    W2 --> B2 --> BR2
-    WN --> BN --> BRN
-    W1 & W2 & WN --> STATE
-    W1 & W2 & WN --> REPORTER
 ```
 
+**Key Points:**
+- 1 task at a time
+- Finish monitoring task sebelum execute task baru
+- No race condition (sequential)
+- Simple state management
+
 ---
 
-## 4. Multi-Broker Support
+## 6. Scaling Strategy
+
+### Horizontal Scaling
 
 ```mermaid
 flowchart TB
-    subgraph CORE["🎯 Core Engine"]
-        WORKER["Worker Interface"]
+    subgraph PHASE1["Phase 1: Testing"]
+        P1["1 Container<br/>1 Account"]
     end
     
-    subgraph ADAPTERS["🔌 Broker Adapters"]
+    subgraph PHASE2["Phase 2: Small Scale"]
+        P2A["Container 1"]
+        P2B["Container 2"]
+        P2C["Container 3"]
+        P2D["Container 4"]
+        P2E["Container 5"]
+    end
+    
+    subgraph PHASE3["Phase 3: Production"]
+        P3["N Containers<br/>N Accounts"]
+    end
+    
+    PHASE1 -->|"Add Containers"| PHASE2
+    PHASE2 -->|"Scale Up"| PHASE3
+```
+
+**Scaling Steps:**
+1. Test dengan 1 container
+2. Tambah container untuk account baru
+3. Monitor resource usage
+4. Scale horizontal sesuai kebutuhan
+
+**Resource per Container:**
+- CPU: 0.5-1 core
+- Memory: 512 MB - 1 GB
+- Disk: 1-2 GB
+
+**Total Resource (10 accounts):**
+- CPU: 5-10 cores
+- Memory: 5-10 GB
+- Disk: 10-20 GB
+
+---
+
+## 7. State Management (Simplified)
+
+### No Concurrency = Simple State
+
+```go
+type RobotState struct {
+    AccountID    string
+    SessionValid bool
+    PINValid     bool
+    ActiveTask   *Task
+    ActiveOrders map[string]Order
+    LastPoll     time.Time
+}
+
+// No mutex needed - single goroutine
+var state RobotState
+
+func UpdateState(newState RobotState) {
+    state = newState // Direct assignment, no locking
+}
+```
+
+**Benefits:**
+- No mutex/lock needed
+- No race conditions
+- Simple debugging
+- Clear execution flow
+
+---
+
+## 8. Multi-Broker Support
+
+### Broker Adapter Pattern
+
+```mermaid
+flowchart TB
+    ROBOT["Robot Engine<br/>(Generic)"]
+    
+    subgraph ADAPTERS["Broker Adapters"]
         A1["Stockbit Adapter"]
         A2["IPOT Adapter"]
         A3["Ajaib Adapter"]
-        AN["... (extensible)"]
     end
     
-    subgraph SELECTORS["🎨 UI Selectors"]
-        S1["stockbit_selectors.json"]
-        S2["ipot_selectors.json"]
-        S3["ajaib_selectors.json"]
+    subgraph CONFIGS["UI Selectors"]
+        C1["stockbit.yaml"]
+        C2["ipot.yaml"]
+        C3["ajaib.yaml"]
     end
     
-    WORKER --> A1 & A2 & A3 & AN
-    A1 --> S1
-    A2 --> S2
-    A3 --> S3
+    ROBOT --> A1 & A2 & A3
+    A1 --> C1
+    A2 --> C2
+    A3 --> C3
 ```
 
-### Broker Adapter Interface
-
+**Adapter Interface:**
 ```go
 type BrokerAdapter interface {
-    // Auth
-    IsSessionValid() bool
+    // Session
+    ValidateSession() error
+    ValidatePIN() error
     
     // Order
-    SubmitOrder(order Order) error
-    CancelOrder(orderID string) error
+    SubmitOrder(ctx context.Context, order Order) (string, error)
+    CancelOrder(ctx context.Context, orderID string) error
     
-    // Read
-    GetOpenOrders() ([]Order, error)
-    GetOrderHistory() ([]Order, error)
-    GetPortfolio() ([]Position, error)
+    // Monitoring
+    GetOrderStatus(ctx context.Context, orderID string) (OrderStatus, error)
+    GetOpenOrders(ctx context.Context) ([]Order, error)
 }
 ```
 
-### Selector Config Example (Stockbit)
-
-```json
-{
-  "broker": "stockbit",
-  "selectors": {
-    "login_check": "#user-profile",
-    "order_form": {
-      "emiten_input": "input[name='stock']",
-      "price_input": "input[name='price']",
-      "lot_input": "input[name='lot']",
-      "tp_input": "input[name='take_profit']",
-      "cl_input": "input[name='cut_loss']",
-      "submit_btn": "button[type='submit']"
-    },
-    "open_orders": {
-      "table": "#open-orders-table",
-      "cancel_btn": ".cancel-order-btn"
-    },
-    "order_history": {
-      "table": "#order-history-table"
-    },
-    "toast": {
-      "success": ".toast-success",
-      "error": ".toast-error"
-    }
-  }
-}
+**Per Container Config:**
+```yaml
+account:
+  broker: "stockbit"  # or "ipot", "ajaib"
+  broker_config: "./brokers/stockbit.yaml"
 ```
 
 ---
 
-## 5. Config-Driven Account Management
+## 9. Resource Isolation
 
-```json
-{
-  "settings": {
-    "operating_hours": {
-      "start": "08:45",
-      "end": "16:15"
-    },
-    "eod_report_time": "16:00",
-    "poll_interval_ms": 2000
-  },
-  "accounts": [
-    {
-      "id": "ACC_001",
-      "broker": "stockbit",
-      "profile_path": "./profiles/acc_001",
-      "enabled": true
-    },
-    {
-      "id": "ACC_002",
-      "broker": "ipot",
-      "profile_path": "./profiles/acc_002",
-      "enabled": true
-    },
-    {
-      "id": "ACC_003",
-      "broker": "ajaib",
-      "profile_path": "./profiles/acc_003",
-      "enabled": false
-    }
-  ]
-}
-```
-
-### Tambah Akun Baru
-
-```mermaid
-flowchart LR
-    A["1️⃣ Tambah entry<br/>di accounts.json"] --> B["2️⃣ Buat folder<br/>profile"]
-    B --> C["3️⃣ Manual login<br/>sekali"]
-    C --> D["4️⃣ Set enabled: true"]
-    D --> E["✅ Done!"]
-```
-
----
-
-## 6. Worker Lifecycle
-
-```mermaid
-stateDiagram-v2
-    [*] --> INIT : robot start
-    
-    INIT --> IDLE : load config & profile
-    IDLE --> SETUP : 08:45 (start time)
-    
-    SETUP --> CHECK_SESSION : check login
-    CHECK_SESSION --> READY : session valid
-    CHECK_SESSION --> WAIT_LOGIN : session expired
-    WAIT_LOGIN --> READY : manual login done
-    
-    READY --> PULL_TASKS : pull from server
-    PULL_TASKS --> TRADING : 09:00 (market open)
-    
-    TRADING --> TRADING : monitor & execute
-    TRADING --> EOD_REPORT : 16:00
-    
-    EOD_REPORT --> IDLE : 16:15 (complete)
-    
-    IDLE --> [*] : robot stop
-```
-
----
-
-## 7. Rate Limiting (Natural)
-
-```mermaid
-flowchart LR
-    subgraph NATURAL["⏱️ Natural Rate Limit via UI"]
-        A["Click Action"] --> B["Loading<br/>(1-2s)"]
-        B --> C["Response<br/>(Toast/Modal)"]
-        C --> D["Verify"]
-        D --> E["Next Action"]
-    end
-```
-
-**Tidak perlu artificial rate limit** - UI loading (~2-5 detik per action) sudah menjadi throttle alami.
-
----
-
-## 8. Scaling Strategy
-
-```mermaid
-flowchart LR
-    subgraph PHASE1["Phase 1"]
-        P1["🧪 Testing<br/>1 Account"]
-    end
-    
-    subgraph PHASE2["Phase 2"]
-        P2["📈 Small Scale<br/>5 Accounts"]
-    end
-    
-    subgraph PHASE3["Phase 3"]
-        P3["🚀 Full Scale<br/>10+ Accounts"]
-    end
-    
-    PHASE1 -->|"Success"| PHASE2
-    PHASE2 -->|"+ Upgrade HW"| PHASE3
-```
-
-| Phase | Accounts | RAM | CPU | Status |
-|-------|----------|-----|-----|--------|
-| Testing | 1 | 4 GB | 2 cores | 🎯 Start here |
-| Small | 5 | 8 GB | 4 cores | Future |
-| Medium | 10 | 16 GB | 6 cores | Future |
-| Large | 20+ | 32 GB | 8 cores | Future |
-
----
-
-## 9. EOD Report Structure
-
-```json
-{
-  "event": "EOD_REPORT",
-  "date": "2026-01-20",
-  "robot_uptime": "7h30m",
-  "summary": {
-    "total_tasks": 25,
-    "tp_hit": 15,
-    "cl_hit": 5,
-    "expired_unmatched": 3,
-    "failed": 2
-  },
-  "unmatched_details": [
-    {
-      "account": "ACC_003",
-      "broker": "stockbit",
-      "emiten": "BBCA",
-      "reason": "order_expired",
-      "buy_price": 2700,
-      "lot_requested": 100,
-      "lot_filled": 0
-    }
-  ],
-  "failed_details": [
-    {
-      "account": "ACC_005",
-      "broker": "ipot",
-      "emiten": "TLKM",
-      "reason": "max_retry_reached",
-      "last_error": "timeout_after_cancel"
-    }
-  ]
-}
-```
-
----
-
-## 10. Execution Model Summary
+### Container Isolation Benefits
 
 ```mermaid
 flowchart TB
-    subgraph MODEL["✅ Execution Model: Full Parallel"]
-        direction LR
-        ACC1["ACC_01"] 
-        ACC2["ACC_02"]
-        ACC3["ACC_03"]
-        ACCN["ACC_N"]
+    subgraph C1["Container 1"]
+        R1["Robot"]
+        B1["Browser"]
+        S1["State"]
+        L1["Logs"]
     end
     
-    TIME["Semua jalan bersamaan<br/>08:45 - 16:15"]
+    subgraph C2["Container 2"]
+        R2["Robot"]
+        B2["Browser"]
+        S2["State"]
+        L2["Logs"]
+    end
     
-    MODEL --> TIME
+    subgraph C3["Container 3"]
+        R3["Robot"]
+        B3["Browser"]
+        S3["State"]
+        L3["Logs"]
+    end
+    
+    CRASH["❌ Container 1 Crash"]
+    CRASH -.-> C1
+    
+    style C1 fill:#FFB6C1
+    style C2 fill:#90EE90
+    style C3 fill:#90EE90
 ```
 
-| Aspect | Decision |
-|--------|----------|
-| Execution | Full Parallel (semua akun bersamaan) |
-| Worker Limit | Unlimited (upgrade hardware jika perlu) |
-| Rate Limit | Natural (UI loading) |
-| Multi-broker | ✅ Yes (Stockbit, IPOT, Ajaib, dll) |
-| Scaling | Config-driven, no code change |
+**Isolation Guarantees:**
+- Crash di 1 container tidak affect yang lain
+- Independent resource limits
+- Separate logs & state
+- Easy troubleshooting per account
 
 ---
 
-## ✅ Status
+## 10. Deployment Patterns
 
-| Item | Status |
-|------|--------|
-| Architecture | ✅ Final |
-| Multi-broker support | ✅ Final |
-| Operating schedule | ✅ Final |
-| Worker lifecycle | ✅ Final |
-| Scaling strategy | ✅ Final |
-| EOD Report | ✅ Final |
+### Docker Compose (Simple)
+
+```yaml
+version: '3.8'
+
+services:
+  robot-acc001:
+    image: trading-robot:latest
+    container_name: robot-acc001
+    cpus: "1.0"
+    mem_limit: "1g"
+    volumes:
+      - ./config-acc001.yaml:/app/config.yaml
+      - robot-acc001-data:/app/data
+    environment:
+      - ACCOUNT_PASSWORD=${ACC001_PASSWORD}
+      - ACCOUNT_PIN=${ACC001_PIN}
+    restart: unless-stopped
+
+  robot-acc002:
+    image: trading-robot:latest
+    container_name: robot-acc002
+    cpus: "1.0"
+    mem_limit: "1g"
+    volumes:
+      - ./config-acc002.yaml:/app/config.yaml
+      - robot-acc002-data:/app/data
+    environment:
+      - ACCOUNT_PASSWORD=${ACC002_PASSWORD}
+      - ACCOUNT_PIN=${ACC002_PIN}
+    restart: unless-stopped
+
+volumes:
+  robot-acc001-data:
+  robot-acc002-data:
+```
+
+### Kubernetes (Advanced)
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-robot
+spec:
+  replicas: 10  # 10 accounts
+  selector:
+    matchLabels:
+      app: trading-robot
+  template:
+    metadata:
+      labels:
+        app: trading-robot
+    spec:
+      containers:
+      - name: robot
+        image: trading-robot:latest
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+        env:
+        - name: ACCOUNT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: robot-secrets
+              key: password
+        - name: ACCOUNT_PIN
+          valueFrom:
+            secretKeyRef:
+              name: robot-secrets
+              key: pin
+      volumes:
+      - name: config
+        configMap:
+          name: robot-config
+```
+
+---
+
+## 11. Monitoring & Health
+
+### Per-Container Metrics
+
+```mermaid
+flowchart LR
+    subgraph METRICS["📊 Metrics per Container"]
+        M1["CPU Usage"]
+        M2["Memory Usage"]
+        M3["Task Count"]
+        M4["Order Count"]
+        M5["Session Valid"]
+        M6["Last Heartbeat"]
+    end
+    
+    subgraph AGGREGATOR["📈 Central Monitor"]
+        AGG["Prometheus/Grafana"]
+    end
+    
+    METRICS --> AGG
+```
+
+**Health Endpoint:**
+```bash
+curl http://localhost:8080/health
+
+{
+  "status": "healthy",
+  "account_id": "ACC_001",
+  "broker": "stockbit",
+  "session_valid": true,
+  "pin_valid": true,
+  "active_tasks": 2,
+  "active_orders": 3,
+  "last_heartbeat": "2026-02-11T10:30:00Z",
+  "uptime": "7h30m"
+}
+```
+
+---
+
+## 12. Summary
+
+| Aspect | Implementation |
+|--------|----------------|
+| **Concurrency Model** | Container-level (horizontal) |
+| **Per Container** | Sequential execution |
+| **Goroutines** | Single main goroutine |
+| **State Management** | No locks/mutex needed |
+| **Scaling** | Add containers = add accounts |
+| **Isolation** | Full container isolation |
+| **Complexity** | Minimal (simple sequential logic) |
+
+**Trade-offs:**
+
+✅ **Pros:**
+- Extremely simple codebase
+- No concurrency bugs
+- Easy debugging
+- Perfect isolation
+- Horizontal scaling
+
+❌ **Cons:**
+- More containers needed
+- Higher memory footprint (total)
+- Container orchestration dependency
+
+**Decision:** ✅ Trade memory for simplicity & reliability
+
+---
+
+## Related Documents
+
+- [[00-README|Overview]]
+- [[01-Architecture|Architecture Detail]]
+- [[13-Session-Management|Session Management]]
+
+---
+
+**Last Updated:** 2026-02-11

@@ -9,8 +9,8 @@ type: data
 title: Historical Income - Slip Gaji Bluebird
 source: Outlook Mbox
 created: '2025-01-02'
-updated: '2025-01-02'
-data_range: Jun 2023 - Dec 2025
+updated: '2026-02-27'
+data_range: Jun 2023 - Feb 2026
 current_position: IT Senior Engineer 1
 current_grade: 15-1
 ---
@@ -39,7 +39,8 @@ Data slip gaji lengkap dari **Juni 2023 - Desember 2025** (31 bulan).
 |-------|----------------------|-------------------|-----------|
 | 2023 (Jun-Des) | Rp 15.5 juta | ~Rp 108.4 juta | Join Bluebird |
 | 2024 | Rp 15.0 juta | ~Rp 180 juta | THR Rp 13.5 jt |
-| 2025 | Rp 15.8 juta | ~Rp 190 juta | 🎉 Promosi Des! |
+| 2025 | Rp 15.8 juta | ~Rp 206 juta | 🎉 Promosi Des! |
+| 2026 | Rp 18.6 juta | Rp 18.6 juta (s.d. Feb) | Grade 15-1, Gaji Pokok Rp 15.1 jt |
 
 ---
 
@@ -54,6 +55,7 @@ Data slip gaji lengkap dari **Juni 2023 - Desember 2025** (31 bulan).
 | Feb 2025 | Kenaikan | IT Engineer 4 | 14 B1 | Rp 13.8 jt | Rp 2.5 jt |
 | Mar 2025 | Adjustment | IT Engineer 4 | 14 B1 | Rp 12.7 jt | Rp 2.5 jt |
 | **Des 2025** | **🎉 PROMOSI!** | **IT Senior Engineer 1** | **15-1** | **Rp 13.7 jt** | **Rp 3.0 jt** |
+| **Feb 2026** | **Kenaikan** | **IT Senior Engineer 1** | **15-1** | **Rp 15.1 jt** | **Rp 3.0 jt** |
 
 ---
 
@@ -91,6 +93,16 @@ Data slip gaji lengkap dari **Juni 2023 - Desember 2025** (31 bulan).
 | Des | 11,600,000 | 1,450,000 | 2,500,000 | 750,000 | - | 16,946,120 | 1,178,845 | **15,767,275** |
 
 **Total 2024:** Rp 188,033,107 (termasuk THR Rp 13.5 juta)
+
+---
+
+## 📅 Detail Bulanan 2026
+
+| Bulan | Posisi | Gaji Pokok | Insentif TJK | Insentif Fungsional | Insentif Kehadiran | THR | Gaji Kotor | Total Potongan | **Gaji Bersih** |
+|-------|--------|------------|--------------|---------------------|-------------------|-----|------------|----------------|-----------------| 
+| Feb | IT Sr Eng 1 | 15,100,000 | 1,887,500 | 3,000,000 | 750,000 | - | 20,645,090 | 2,151,081 | **18,581,419** |
+
+**Total 2026 (s.d. Feb):** Rp 18,581,419
 
 ---
 

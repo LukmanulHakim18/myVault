@@ -610,8 +610,8 @@ logger.Error("error.PublishMessage",
 
 ```bash
 # Service Config
-GRPC_PORT=50051
-REST_PORT=8051
+GRPC_PORT=6039
+REST_PORT=8039
 LOG_LEVEL=INFO
 
 # Message Broker

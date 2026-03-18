@@ -86,26 +86,31 @@ flowchart TB
 - [[17-API-Contract|API Contract]]
 - [[18-Testing-Strategy|Testing Strategy]]
 
+### 🏦 Broker Specifications
+- [[19-Stockbit-Broker-Flow|Stockbit Broker Flow]] - Standard Engine
+
 ---
 
 ## ✅ Design Complete
 
 | # | Topic | Status |
 |---|-------|--------|
-| 1 | Timeout & Retry | ✅ Done |
-| 2 | Partial Fill & TP/CL | ✅ Done |
-| 3 | Cancel Order Flow | ✅ Covered |
-| 4 | Retry & Failure Policy | ✅ Covered |
-| 5 | Concurrency Model | ✅ Done |
-| 6 | Logging & Audit Trail | ✅ Done |
-| 7 | Alerting Mechanism | ✅ Done |
-| 8 | Market Hours & Special Cases | ✅ Done |
-| 9 | UI Element Detection | ✅ Done |
-| 10 | Session Management | ✅ Done |
-| 11 | Agent Team Structure | ✅ Done |
-| 12 | Dashboard Requirements | ✅ Done |
-| 13 | API Contract | ✅ Done |
-| 14 | Testing Strategy | ✅ Done |
+| 1 | Architecture | ✅ Single-Account per Container |
+| 2 | Timeout & Retry | ✅ Done |
+| 3 | Partial Fill & TP/CL | ✅ Done |
+| 4 | Cancel Order Flow | ✅ Covered |
+| 5 | Retry & Failure Policy | ✅ Covered |
+| 6 | Concurrency Model | ✅ Container-level (Simplified) |
+| 7 | Logging & Audit Trail | ✅ Done |
+| 8 | Alerting Mechanism | ✅ Done |
+| 9 | Market Hours & Special Cases | ✅ Done |
+| 10 | UI Element Detection | ✅ Done |
+| 11 | Session Management | ✅ Done |
+| 12 | Agent Team Structure | ✅ Done |
+| 13 | Dashboard Requirements | ✅ Done |
+| 14 | API Contract | ✅ Done |
+| 15 | Testing Strategy | ✅ Done |
+| 16 | Stockbit Broker Flow | ✅ Standard Engine |
 
 ---
 
@@ -116,7 +121,7 @@ flowchart TB
 | 2026-01-20 | Initial design discussion |
 | 2026-01-20 | Migrated to Obsidian |
 | 2026-01-20 | Added Mermaid diagrams |
-| 2026-01-20 | Concurrency Model finalized |
+| 2026-01-20 | Concurrency Model finalized (Multi-account) |
 | 2026-01-20 | Logging & Audit Trail finalized |
 | 2026-01-20 | Alerting Mechanism finalized |
 | 2026-01-20 | Market Hours & Special Cases finalized |
@@ -129,3 +134,7 @@ flowchart TB
 | 2026-01-21 | API Contract defined |
 | 2026-01-21 | Testing Strategy defined |
 | 2026-01-21 | 🚀 Ready for Development Phase! |
+| 2026-02-11 | **Major Revision: Single-Account per Container** |
+| 2026-02-11 | Architecture simplified to container-level concurrency |
+| 2026-02-11 | Stockbit Broker Flow documented as standard engine |
+| 2026-02-11 | ✅ Architecture finalized for implementation |

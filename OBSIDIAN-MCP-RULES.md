@@ -28,7 +28,7 @@
 | Content Type | Correct Path |
 |--------------|--------------|
 | Deployment Overtime | `02-Work/Deployments/` |
-| RFCs | `02-Work/Teams/{MRG\|UPG}/01-architecture/rfcs/` |
+| RFCs | `02-Work/Teams/{MRG\|UPG}/01-architecture/rfcs/` or project-specific folder |
 | ADRs | `02-Work/Teams/{MRG\|UPG}/01-architecture/adrs/` |
 | Design Docs | `02-Work/Teams/{MRG\|UPG}/01-architecture/design-docs/` |
 | Code Reviews | `02-Work/Code-Reviews/` |

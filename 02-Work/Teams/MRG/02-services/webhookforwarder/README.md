@@ -1,328 +1,281 @@
-# Webhook Forwarder - Service Documentation
+---
+tags:
+  - mrg
+  - service
+  - webhookforwarder
+  - webhook
+  - callback
+  - grpc
+  - documentation
+team: MRG
+type: service-documentation
+title: Webhook Forwarder
+status: production
+created: '2026-02-27'
+updated: '2026-02-27'
+grpc_port: 6039
+rest_port: 8039
+repository: git.bluebird.id/mybb-ms/webhookforwarder
+tech_stack:
+  - go
+  - grpc
+  - rabbitmq
+  - pubsub
+---
 
-## Quick Links
-- [[01-overview|📋 Service Overview]] - Architecture, patterns, dan responsibilities
-- [[02-api-reference|📡 API Reference]] - Complete API documentation (9 endpoints)
+# Webhook Forwarder
 
-## Service Summary
-
-**Webhook Forwarder** adalah **centralized callback receiver hub** yang menerima semua webhook callbacks dari external systems dalam ekosistem MyBB dan men-route mereka ke appropriate internal microservices via message broker.
-
-### Key Capabilities
-- 🎯 **Single Entry Point** - Unified interface untuk 9+ callback types
-- ⚡ **Async Processing** - Immediate response dengan async event publishing
-- 🔄 **Event Routing** - Smart routing ke appropriate message topics
-- 🔙 **Backward Compatible** - Support legacy systems dengan dual routing
-- 📊 **Full Observability** - Comprehensive logging dan metrics
-
-### Architecture Pattern
-```
-External Callbacks → Webhook Forwarder → Message Broker → Internal Services
-```
-
-### Supported Callbacks
-1. **Payment Callbacks** (3 types)
-   - Pre-authorization results
-   - Nicepay payment gateway
-   - Refund status updates
-
-2. **Order Callbacks** (2 types)
-   - Web order updates
-   - Mobile order updates
-
-3. **Refund Callbacks** (1 type)
-   - Cititrans shuttle refunds
-
-4. **Document Callbacks** (2 types)
-   - Document generation completion
-   - Legacy document callback
-
-5. **Notification Callbacks** (1 type)
-   - FCM token management
-
-### Technology Stack
-- **Language**: Go 1.24
-- **Protocol**: gRPC + REST Gateway
-- **Message Broker**: Google Cloud Pub/Sub
-- **Observability**: Elastic APM + Prometheus
-
-### Performance
-- **Latency P95**: <100ms
-- **Throughput**: ~500 webhooks/second
-- **Availability**: 99.9% SLA
-- **Daily Volume**: ~8M webhooks/day
+**Team**: MRG (Meta Reservation Gateway)  
+**Status**: ✅ Production  
+**Repository**: `git.bluebird.id/mybb-ms/webhookforwarder`
 
 ---
 
-## Documentation Structure
+## 📋 Overview
 
-### 01-overview.md
-Comprehensive service overview covering:
-- Service purpose dan responsibilities
-- Architecture patterns (Facade, Async Publishing)
-- Complete callback types dengan routing details
-- Integration architecture
-- Message broker topics
-- Error handling strategies
-- Observability configuration
-- Performance characteristics
-- Best practices
+Webhook Forwarder adalah microservice yang berfungsi sebagai **single entry point** untuk semua incoming callback/webhook dari external systems ke ekosistem MyBluebird. Service ini menerima callback, memvalidasi, lalu mem-publish ke message broker (RabbitMQ/PubSub) untuk diproses secara async oleh service terkait.
 
-### 02-api-reference.md
-Complete API documentation including:
-- All 9 webhook endpoints dengan detailed examples
-- Request/response formats untuk each callback type
-- Success dan error code reference
-- Message broker topic routing table
-- Testing commands (cURL examples)
-- Best practices untuk webhook integration
+### Fungsi Utama
+
+- **Order Callback** - Terima callback order state changes dari BBD (web & mobile)
+- **Payment Callback** - Terima callback pre-auth CC, payment refund status, NicePay
+- **Cititrans Callback** - Terima callback refund status dari Cititrans Order Processor
+- **Document Callback** - Terima callback generate document dari Document Generator
+- **Notification Callback** - Terima callback status notifikasi (token expired, dll)
+
+### Pola Arsitektur
+
+Semua endpoint mengikuti pola yang sama:
+
+```
+External System → Webhook Forwarder (validate + auth) → Publish to Broker → Consumer Service
+```
+
+Service ini **tidak melakukan business logic** — hanya menerima, memvalidasi, dan meneruskan ke broker.
 
 ---
 
-## Quick Start
+## 🛠️ Tech Stack
 
-### Local Development
-```bash
-# Clone repository
-git clone git@git.bluebird.id:mybb-ms/webhookforwarder.git
-cd webhookforwarder
-
-# Setup environment
-cp .envsample .env
-# Edit .env dengan proper configuration
-
-# Run service
-go run main.go
-```
-
-### Testing
-```bash
-# Test health check
-curl http://localhost:8051/health
-
-# Test webhook callback
-curl -X POST http://localhost:8051/v1/webhooks/order-callback-mobile \
-  -H "Content-Type: application/json" \
-  -d '{"event":{"id":"test","type":"test","time":"2025-01-07T10:00:00Z"},"order":{"order_id":123,"status":1},"state":1}'
-```
+| Component | Technology |
+|-----------|------------|
+| Language | Go 1.24 |
+| Protocol | gRPC + REST (gRPC-Gateway) |
+| Message Broker | RabbitMQ (primary) |
+| Messaging Library | PubSub (commonmessaging) |
+| Monitoring | Elastic APM, Prometheus |
+| Container | Docker, Kubernetes |
 
 ---
 
-## Key Features
+## 🔌 Dependencies
 
-### 1. Centralized Webhook Management
-Single service manages all external callbacks:
-- Simplified webhook endpoint configuration untuk external systems
-- Centralized logging dan monitoring
-- Consistent error handling
-- Unified authentication/authorization
+### Internal Services
 
-### 2. Async Event Processing
-Fast webhook response dengan async processing:
-```
-Response Time: <50ms average
-Processing: Async via message broker
-Reliability: Broker retry mechanism
-Decoupling: Services process independently
-```
+| Service | Purpose | Protocol |
+|---------|---------|----------|
+| **Old Payment Processor** | Forward pre-auth CC callback | HTTP REST |
+| **Cititrans Order Processor** | Refund status reference | HTTP REST |
 
-### 3. Backward Compatibility
-Support legacy systems:
-- Dual routing (sync legacy + async pubsub)
-- Gradual migration path
-- No breaking changes untuk external systems
+### Infrastructure
 
-### 4. Smart Routing
-Automatic routing ke appropriate consumers:
-```
-Payment → UPG/TOP
-Orders → TOP
-Refunds → COP
-Documents → Document Service
-Notifications → NotificationCenter
-```
+| Component | Purpose |
+|-----------|---------|
+| **RabbitMQ** | Primary message broker untuk publish callback events |
 
----
+### Repository Structure
 
-## Integration Guide
-
-### For External Systems (Webhook Senders)
-
-**1. Configure Webhook URL**:
-```
-Production: https://webhookforwarder.bluebird.id/v1/webhooks/{endpoint}
-Staging: https://webhookforwarder-stg.bluebird.id/v1/webhooks/{endpoint}
-```
-
-**2. Implement Retry Logic**:
-```
-Max Retries: 3
-Backoff: Exponential (1s, 2s, 4s)
-Timeout: 30s per attempt
-```
-
-**3. Handle Response**:
-```json
-// Success (always 200 OK)
-{
-  "code": "WHFW-20xxx",
-  "message": "success"
+```go
+type Repository struct {
+    CititransOrderProcessor repoiface.CititransOrderProcessor
+    Publisher               repoiface.Publisher
+    OldPaymentProc          repoiface.OldPaymentProc
 }
 ```
 
-**4. Common Endpoints**:
-- `/v1/webhooks/pre-auth-callback` - Payment pre-auth
-- `/v1/webhooks/order-callback-mobile` - Mobile orders
-- `/v1/webhooks/order-callback-web` - Web orders
-- `/v1/webhooks/payment-nicepay-callback` - Nicepay
-- `/v1/webhooks/cititrans-refund-status` - Cititrans refunds
+---
 
-### For Internal Services (Message Consumers)
+## 📡 API Contracts
 
-**1. Subscribe to Topics**:
-```go
-// Example: Subscribe to order callbacks
-topic := "webhook_forwarder.order_callback"
-subscription := client.Subscription(topic)
-```
+### gRPC Service
 
-**2. Process Messages**:
-```go
-subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-    // Parse message
-    var callback OrderCallback
-    json.Unmarshal(msg.Data, &callback)
-    
-    // Process callback
-    processOrderCallback(callback)
-    
-    // Acknowledge
-    msg.Ack()
-})
-```
+**Package**: `webhookforwarder`  
+**Proto File**: `contract/webhook_forwarder.proto`  
+**Ports**: gRPC `6039`, REST `8039`
 
-**3. Available Topics**:
-- `webhook_forwarder.order_callback` - Order updates
-- `webhook_forwarder.pre_auth_callback` - Pre-auth results
-- `webhook_forwarder.payment_nicepay_callback` - Nicepay payments
-- `cititrans.refund_status` - Shuttle refunds
-- `documentgenerator.callback_listener` - Documents
+### Methods Overview
+
+| Method | Source | Destination (Broker Topic) | Description |
+|--------|--------|---------------------------|-------------|
+| `HealthCheck` | - | - | Health check |
+| `OrderCallbackWeb` | BBD/bb-order | `TOPIC_ORDER_CALLBACK` | Order state changes (web) |
+| `OrderCallbackMobile` | BBD/bb-order | `TOPIC_ORDER_CALLBACK` | Order state changes (mobile) |
+| `PreAuthCallback` | UPG | `TOPIC_PRE_AUTH_CALLBACK` | CC pre-auth result |
+| `PaymentRefundStatus` | UPG | `TopicPaymentRefundStatus` | Payment refund status update |
+| `PaymentNicepayCallback` | NicePay | - | NicePay payment callback |
+| `CititransRefundStatus` | Cititrans | `TopicCititransRefundStatus` | Cititrans refund status |
+| `GenerateDocumentCallback` | Document Generator | - | Document generation result (legacy) |
+| `DocumentGeneratorCallback` | Document Generator | - | Document generation result (v2) |
+| `ReceiveNotificationCallback` | Notification Provider | `TopicDeleteBBOneUserRecipientId` | Push notification status (token expired) |
 
 ---
 
-## Troubleshooting
+## 🔄 Flow
 
-### Common Issues
+### Order Callback Flow
 
-#### 1. Webhook Not Received
-**Check**:
-- Service health: `curl http://webhookforwarder:8051/health`
-- Network connectivity
-- Firewall rules
-- Correct endpoint URL
-
-#### 2. Message Not Published
-**Check Logs**:
-```bash
-kubectl logs -f deployment/webhookforwarder | grep "error.PublishMessage"
+```
+BBD Dispatch → POST /order-callback-web (REST)
+    ↓
+Webhook Forwarder validates AUTH_KEY
+    ↓
+Publish to RabbitMQ: TOPIC_ORDER_CALLBACK
+    ↓
+Consumer (mybb-order-processing-go) processes event
 ```
 
-**Common Causes**:
-- Broker connection issues
-- Invalid message format
-- Topic permissions
+### Pre-Auth Callback Flow
 
-#### 3. Legacy System Timeout (PreAuth)
-**Symptoms**: PreAuthCallback returns timeout error
+```
+UPG → PreAuthCallback (gRPC/REST)
+    ↓
+Webhook Forwarder → Forward to Old Payment Processor (HTTP)
+    ↓
+If success → Publish to RabbitMQ: TOPIC_PRE_AUTH_CALLBACK
+    ↓
+Consumer (paymentprocessor) updates pre-auth status
+```
 
-**Solution**:
-```bash
-# Check legacy system health
-curl http://old-payment-proc:8080/health
+### Notification Callback Flow
 
-# Increase timeout if needed
-LEGACY_TIMEOUT=60s  # in config
+```
+Push Notification Provider → ReceiveNotificationCallback
+    ↓
+Check status == TOKEN_EXPIRED
+    ↓
+Publish to PubSub: TopicDeleteBBOneUserRecipientId
+    ↓
+Consumer (notificationcenter) removes expired token
 ```
 
 ---
 
-## Monitoring
+## ⚙️ Configuration
 
-### Key Metrics
-```prometheus
-# Webhook reception
-whfw_webhooks_received_total{type="order_callback"}
+### Environment Variables
 
-# Publishing success rate
-rate(whfw_messages_published_total{status="success"}[5m]) /
-rate(whfw_messages_published_total[5m])
+```env
+# Application
+APP_NAME=webhook-forwarder
+GRPC_PORT=6039
+REST_PORT=8039
+LOG_LEVEL=info
+LOG_DIRECTORY=
 
-# Response time
-whfw_webhook_duration_seconds{endpoint="order_callback"}
-```
+# Security
+AUTH_KEY=  # Key untuk validasi incoming webhook
 
-### Alerts
-```yaml
-- alert: HighWebhookFailureRate
-  expr: rate(whfw_messages_published_total{status="failed"}[5m]) > 0.01
-  severity: warning
+# Cititrans Order Processor
+CITITRANS_ORDER_PROCESSOR_HOST=http://dev-mybb-api.gcp.bluebird.id/cititrans-order-processor
 
-- alert: WebhookServiceDown
-  expr: up{job="webhookforwarder"} == 0
-  severity: critical
-```
+# Old Payment Processor
+OLDPAYMENTPROC_HOST=
 
----
+# Message Broker
+RABBITMQ_CLIENT_URI=
+RABBITMQ_GOROOSTER_TOPIC_NAME=
 
-## Security
-
-### Authentication
-- **Incoming**: Validate webhook signatures (implementation pending)
-- **Outgoing**: Service account for message broker
-
-### Authorization
-- **Endpoints**: Public (but should implement signature verification)
-- **Message Topics**: Topic-level IAM controls
-
-### Best Practices
-- [ ] Implement webhook signature verification
-- [ ] Rate limiting per sender
-- [ ] IP whitelist for known external systems
-- [ ] TLS for all connections
-
----
-
-## Related Services
-- **TOP** (Taxi Order Processor) - Consumes order callbacks
-- **COP** (Cititrans Order Processor) - Sends/consumes shuttle callbacks
-- **UPG** (Universal Payment Gateway) - Sends payment callbacks
-- **NotificationCenter** - Consumes notification callbacks
-- **Document Service** - Consumes document callbacks
-
----
-
-## Maintenance
-
-### Deployment
-```bash
-# Build
-./build.sh
-
-# Deploy to staging
-./deploy.sh staging
-
-# Deploy to production
-./deploy.sh production
-```
-
-### Rolling Back
-```bash
-kubectl rollout undo deployment/webhookforwarder
-kubectl rollout status deployment/webhookforwarder
+# Observability
+ELASTIC_APM_SERVER_URL=
+ELASTIC_APM_SERVICE_NAME=webhook-forwarder
+ELASTIC_APM_ENVIRONMENT=production
 ```
 
 ---
 
-**Service Status**: Production (Stable)  
-**Team**: MRG (Meta Reservation Gateway)  
-**Last Updated**: 2025-01-07
+## 📂 Project Structure
+
+```
+webhookforwarder/
+├── main.go
+├── go.mod
+├── Dockerfile
+├── Jenkinsfile
+│
+├── config/
+│   ├── default.go             # Default config (grpc:6039, rest:8039)
+│   ├── logger/
+│   └── repository/
+│
+├── constant/
+│   ├── constant.go
+│   ├── success_code.go        # Success response codes
+│   ├── receive_notification_callback_status.go
+│   └── cititirant_update_order_file_url.go
+│
+├── contract/
+│   ├── webhook_forwarder.proto
+│   ├── webhook_forwarder.pb.go
+│   ├── webhook_forwarder_grpc.pb.go
+│   ├── webhook_forwarder.pb.gw.go
+│   ├── webhook_forwarder.swagger.json
+│   └── input_validator.go
+│
+├── model/
+│   ├── event.go
+│   ├── job_api.go
+│   └── cititrans_order_processor.go
+│
+├── repository/
+│   ├── base_repository.go
+│   ├── repoiface/
+│   ├── repomock/
+│   ├── cititransorderprocessor/
+│   ├── oldpaymentproc/
+│   └── publisher/             # RabbitMQ publisher
+│
+├── usecase/
+│   ├── base_usecase.go
+│   ├── health_check.go
+│   ├── order_callback_web.go
+│   ├── order_callback_mobile.go
+│   ├── pre_auth_callback.go
+│   ├── payment_refund_status.go
+│   ├── payment_nicepay_callback.go
+│   ├── cititrans_refund_status.go
+│   ├── generate_document_callback.go
+│   ├── document_generator_callback.go
+│   └── receive_notification_callback.go
+│
+├── transport/
+│   └── ... (one file per endpoint)
+│
+├── server/
+│   ├── grpc.go
+│   ├── rest.go
+│   ├── rest_option.go
+│   └── metric.go
+│
+├── util/
+│   ├── errors/
+│   ├── interceptor/
+│   └── server.go
+│
+└── k8s/
+    └── huawei-application.yaml
+```
+
+---
+
+## 🔗 Related Documentation
+
+- [[02-Work/Teams/MRG/00-service-catalog|MRG Service Catalog]]
+- [[02-Work/Teams/MRG/02-services/paymentprocessor/README|Payment Processor]] (consumer of pre-auth callback)
+- [[02-Work/Teams/MRG/02-services/notificationcenter/README|Notification Center]] (consumer of notification callback)
+
+---
+
+#mrg #service #webhookforwarder #webhook #callback #grpc #documentation
+
+*Last Updated*: 2026-02-27  
+*Generated from*: Repository analysis at `D:\code\go\mybb-ms\webhookforwarder`

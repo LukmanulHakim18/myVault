@@ -51,11 +51,11 @@ version: '1.0'
 
 ## A2. Package Organization
 
-| # | Pertanyaan | Opsi | Keputusan |
-|---|------------|------|-----------|
-| A2.1 | Architecture pattern yang direkomendasikan? | a) Clean Architecture<br>b) Hexagonal Architecture<br>c) Domain-Driven Design<br>d) Fleksibel, tidak di-enforce | A |
-| A2.2 | Internal package structure? | a) By layer (handler, service, repository)<br>b) By domain/feature<br>c) Hybrid | C |
-| A2.3 | Shared/common package handling? | a) Monorepo shared module<br>b) Private Go module terpisah<br>c) Copy-paste allowed | A |
+| #    | Pertanyaan                                  | Opsi                                                                                                            | Keputusan |
+| ---- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------- |
+| A2.1 | Architecture pattern yang direkomendasikan? | a) Clean Architecture<br>b) Hexagonal Architecture<br>c) Domain-Driven Design<br>d) Fleksibel, tidak di-enforce | A         |
+| A2.2 | Internal package structure?                 | a) By layer (handler, service, repository)<br>b) By domain/feature<br>c) Hybrid                                 | C         |
+| A2.3 | Shared/common package handling?             | a) Monorepo shared module<br>b) Private Go module terpisah<br>c) Copy-paste allowed                             | A         |
 
 ---
 

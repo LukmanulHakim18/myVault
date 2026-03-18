@@ -7,12 +7,12 @@ Webhook Forwarder menyediakan unified API untuk menerima callbacks dari berbagai
 
 ### gRPC
 ```
-grpc://webhookforwarder:50051
+grpc://webhookforwarder:6039
 ```
 
 ### REST (via Gateway)
 ```
-http://webhookforwarder:8051
+http://webhookforwarder:8039
 ```
 
 ---
@@ -725,7 +725,7 @@ return &Response{Code: "200", Message: "success"}, nil
 
 **PreAuthCallback**:
 ```bash
-curl -X POST http://webhookforwarder:8051/v1/webhooks/pre-auth-callback \
+curl -X POST http://webhookforwarder:8039/v1/webhooks/pre-auth-callback \
   -H "Content-Type: application/json" \
   -d '{
     "order_id": "123456",
@@ -740,7 +740,7 @@ curl -X POST http://webhookforwarder:8051/v1/webhooks/pre-auth-callback \
 
 **OrderCallbackMobile**:
 ```bash
-curl -X POST http://webhookforwarder:8051/v1/webhooks/order-callback-mobile \
+curl -X POST http://webhookforwarder:8039/v1/webhooks/order-callback-mobile \
   -H "Content-Type: application/json" \
   -d '{
     "event": {
@@ -759,7 +759,7 @@ curl -X POST http://webhookforwarder:8051/v1/webhooks/order-callback-mobile \
 
 **CititransRefundStatus**:
 ```bash
-curl -X POST http://webhookforwarder:8051/v1/webhooks/cititrans-refund-status \
+curl -X POST http://webhookforwarder:8039/v1/webhooks/cititrans-refund-status \
   -H "Content-Type: application/json" \
   -d '{
     "booking_id": "CTT-123456",

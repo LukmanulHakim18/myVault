@@ -83,16 +83,72 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "02-Work/Teams/MRG/01-architecture/design-docs/n2c-complete-flow-documentation.md",
+                "file": "02-Work/Teams/MRG/01-architecture/design-docs/cc-charging-flow/02-spike-new-charging-flow.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "n2c-complete-flow-documentation"
+              "title": "02-spike-new-charging-flow"
+            }
+          },
+          {
+            "id": "016c4ba5ed6b3120",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee/catatan.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "catatan"
+            }
+          },
+          {
+            "id": "cd59fa1149f0e60c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "config mcp claude.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "config mcp claude"
+            }
+          },
+          {
+            "id": "f70836b6530d8686",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee/RFC-003-user-service-foreign-flag.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "RFC-003-user-service-foreign-flag"
+            }
+          },
+          {
+            "id": "66f174bde7a09a8f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets/RFC-001-multi-select-fleets-overview.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "RFC-001-multi-select-fleets-overview"
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 9
       }
     ],
     "direction": "vertical"
@@ -124,7 +180,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": " ",
+                "query": "push",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -149,7 +205,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 446.5
+    "width": 283.5
   },
   "right": {
     "id": "ce77afcada3a07e3",
@@ -251,44 +307,44 @@
       "bases:Create new base": false
     }
   },
-  "active": "65057dd6ededf6f7",
+  "active": "66f174bde7a09a8f",
   "lastOpenFiles": [
-    "02-Work/Deployment Overtime Index.md",
-    "02-Work/N2C (Ngecharge to Cloud) - Complete Flow Documentation.md",
-    "02-Work/Teams/MRG/01-architecture/design-docs/n2c-complete-flow-documentation.md",
-    "Untitled 1.md",
-    "02-Work/Architecture-Office/initiatives/gcp-to-hwc-migration.md",
-    "solution FDS.md",
-    "00-Inbox/hari ini meeting dengan tim upg dengan tema Diskusi SNAP E-Wallet.md",
-    "Untitled.md",
-    "02-Work/Architecture/RabbitMQ-Benchmark/2026-02-04-chaos-test-results.md",
-    "02-Work/Technical-Specs/rabbitmq-benchmark-comparison.md",
-    "02-Work/Technical-Specs/rabbitmq-chaos-test-setup-complete.md",
-    "02-Work/Technical-Specs/rabbitmq-multi-zone-failover-test-plan.md",
-    "02-Work/Technical-Specs/rabbitmq-queue-types-comparison.md",
-    "02-Work/Technical-Specs/rabbitmq-failover-docker-setup.md",
-    "02-Work/Technical-Specs/rabbitmq-benchmark-comprehensive-analysis.md",
-    "02-Work/Deployments/2026-02-deployment-log.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler/RESEARCH-supporting-data.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler/README.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler/SKILL-code-analyzer.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler/SKILL-elk-log-analyzer.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler/SKILL-gitlab-issue.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler/RFC-001-openclaw-incident-handler.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/openclaw-incident-handler",
+    "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets/README.md",
+    "02-Work/Teams/MRG/01-architecture/design-docs/rent-revamp-push-ho/README.md",
+    "02-Work/Teams/MRG/01-architecture/design-docs/rent-revamp-push-ho",
+    "02-Work/Teams/UPG/01-architecture/design-docs/nicepay-payment-link.md",
+    "02-Work/Teams/MRG/00-overview/✅ Tech Debt & Improvement Backend – Selesai 2025.md",
+    "02-Work/Architecture-Office/TASK-TRACKER.md",
+    "02-Work/Meetings/2025-01-27 - ECV for GB Rent Revamp Discussion.md",
+    "02-Work/Teams/MRG/00-service-catalog.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets/RFC-001-multi-select-fleets-overview.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets/RFC-004-payment-flow-multi-fleet.md",
+    "dashboard.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets/RFC-003-order-orchestrator-multi-fleet.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets/RFC-002-session-manager-fleet-pricing.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/multi-select-fleets",
+    "config mcp claude.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee/RFC-003-user-service-foreign-flag.md",
+    "02-Work/Meetings/2026-03-10-vp-meeting-iot-dispatcher.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee/RFC-001-dynamic-platform-fee-service.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee/RFC-002-order-orchestrator-counter.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee/README.md",
+    "02-Work/Deployments/2026-03-deployment-log.md",
+    "02-Work/Teams/MRG/01-architecture/design-docs/cc-charging-flow/02-spike-new-charging-flow.md",
+    "02-Work/Teams/MRG/01-architecture/rfcs/dynamic-platform-fee",
+    "02-Work/Teams/MRG/01-architecture/dynamic-platform-fee",
+    "02-Work/Teams/MRG/01-architecture/design-docs/cc-charging-flow",
     "02-Work/Technical-Specs/rabbitmq-benchmark-comprehensive-analysis_tmp.html",
-    "02-Work/Teams/MRG/02-services/notificationcenter/05-dependencies.md",
-    "02-Work/Teams/MRG/02-services/notificationcenter/01-overview.md",
-    "04-Resources/References/Architecture Analysis - skeleton-api-go.md",
-    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/dependencies.md",
-    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/dependencies.md",
-    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/legacy-flows.md",
-    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/api-reference.md",
-    "02-Work/Teams/MRG/02-services/mybb-api-gateway-go/README.md",
     "02-Work/Teams/MRG/02-services/mybb-api-gateway-go",
-    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/api-reference.md",
-    "02-Work/Teams/MRG/02-services/mybb-order-processing-go/kafka-topics.md",
     "02-Work/Teams/MRG/02-services/mybb-order-processing-go",
     "02-Work/Deployments/postmortems",
-    "02-Work/Deployments",
-    "Work/Overtime",
-    "02-Work/Meetings",
-    "02-Work/Teams/MRG/01-architecture/design-docs/reserved-budget-ecv",
-    "Work/Meetings",
-    "Work",
     "Untitled.canvas"
   ]
 }
