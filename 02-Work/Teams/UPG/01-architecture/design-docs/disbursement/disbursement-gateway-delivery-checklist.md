@@ -14,7 +14,7 @@ type: checklist
 status: active
 owner: lukmanul.hakim
 created: "2026-07-08"
-updated: "2026-07-08"
+updated: "2026-07-09"
 related:
   - "[[disbursement-gateway-requirements]]"
   - "[[disbursement-gateway-design]]"
@@ -36,6 +36,8 @@ related:
 > - 🟡 **Track B (menyusul)**: OLT / RTGS / SKN — **blocked** sampai DATA-1 (attachment metadata bank) turun.
 
 **Legenda**: 🔴 blocking · ⏳ long lead-time · 🟢 Track A · 🟡 Track B · ⭐ prasyarat produksi
+
+> **Status implementasi kode (2026-07-09):** repo `git.bluebird.id/upg/disbursementservice`, 4 commit lokal (belum push — nunggu default branch GitLab). **12/16 usecase GREEN via TDD** (3 read-only + 8 Admin API + `Disburse`). Sisa panic: `DisburseBatch`, `InquiryBeneficiary`, `BalanceInquiry`, `HistoryList`. **OCBC adapter nyata (HTTP/signature/mTLS) belum ada** — semua test lulus via mock; M3 baru "orkestrasi tervalidasi", bukan "OCBC benar-benar bisa dihubungi".
 
 ---
 
@@ -74,34 +76,35 @@ related:
 
 ---
 
-## M2 — Foundation (broker skeleton, provider-agnostic)
+## M2 — Foundation (broker skeleton, provider-agnostic) — 🟢 SEBAGIAN BESAR SELESAI
 
-- [ ] Scaffold service via **`eneraplus init-service`** (skill `enera`; layer selaras skeleton-api-go) 🔴
-- [ ] ⚠️ **Reconcile** pemetaan layer desain §2 dgn output nyata `eneraplus` (penamaan folder, ada/tidaknya `endpoint/`,`delivery/`)
-- [ ] Tabel **`channel_registry`** — entitlement (`allowed_banks`, `allowed_transfer_methods`), source account per-channel, originator PPATK, `api_token_hash`, webhook (velocity columns **TIDAK** dibuat — OQ-5 dropped)
-- [ ] Tabel **`disbursements`** (`UNIQUE(channel, idempotency_key)`, `partner_reference_no` unik, raw req/resp jsonb audit) + migrations
-- [ ] Tabel **`disbursement_batches`** (header batch) + **`bank_metadata`** (kosong dulu, diisi DATA-1) + **`outbox`**
-- [ ] **Admin API internal** (`DisbursementAdmin`, ClusterIP internal-only): `RegisterClient`, `IssueToken`/`RotateToken`, `RegisterProvider`, `RegisterSourceAccount`, `AddRoute`, `DisableRoute`, `AddTransferMethod` *(fase-1 boleh seed manual DB dulu)*
-- [ ] **Penerbitan token**: generate opaque acak → `api_token_hash`=SHA-256 → plaintext sekali; rotasi = baru+invalidate
-- [ ] Entitlement **opt-in** (route dibuat eksplisit via `AddRoute`, bukan auto-allow-all)
-- [ ] **Auth** per channel (B5): service token/API key di metadata gRPC/header → middleware cocokkan `api_token_hash`; set `channel` context + rotasi secret
-- [ ] **Idempotency** middleware (`UNIQUE(channel, idempotency_key)`; hit ke-2 balikin hasil pertama) + **Redis distributed lock** per `partner_reference_no` (anti double-submit)
-- [ ] **Domain model** + **status FSM** kanonik (CREATED→SUBMITTED→PENDING→SUCCESS/FAILED/CANCELLED/REFUNDED/NEEDS_INVESTIGATION) + mapping kode OCBC 00–07
-- [ ] **Validator**: entitlement (bank+method vs whitelist channel) + **limit teknis** method (amount + jam operasional) — **bukan** auto-pilih channel
-- [ ] Kontrak **gRPC** provider-agnostic: `GetAllowedRoutes`, `InquiryBeneficiary`, `Disburse`, `DisburseBatch`, `GetStatus`, `GetBatchStatus`, `BalanceInquiry`, `HistoryList`
+- [x] Scaffold service via **`eneraplus init-service`** (skill `enera`; layout: `usecase/`+`transport/`+`repository/db/`+`repository/repoiface/`) 🔴
+- [x] Tabel **`channel_registry`** — entitlement dinormalisasi ke 4 tabel (`provider`/`source_account`/`transfer_method`/`route`, bukan kolom `allowed_banks`/`allowed_transfer_methods` — lihat design §4), originator PPATK, `api_token_hash`, webhook (velocity columns **TIDAK** dibuat — OQ-5 dropped)
+- [x] Tabel **`disbursements`** (`UNIQUE(channel, idempotency_key)`, `partner_reference_no` unik, raw req/resp jsonb audit) — DDL manual (`model/schema.sql`, belum ada tool migrasi)
+- [x] Tabel **`disbursement_batches`** + **`bank_metadata`** (kosong, diisi DATA-1) + **`outbox`**
+- [x] **Admin API internal** (`DisbursementAdmin` RPC di-merge ke `service Disbursement` — standar eneraplus 1-proto-1-service): `RegisterClient`, `IssueToken`/`RotateToken`, `RegisterProvider`, `RegisterSourceAccount`, `AddRoute`, `DisableRoute`, `AddTransferMethod` — **8/8 usecase GREEN via TDD**. REST `/internal/admin/*`
+- [x] **Penerbitan token**: generate opaque acak (32-byte base62) → `api_token_hash`=SHA-256(hex) → plaintext sekali; `RotateToken` = baru+invalidate — teruji
+- [x] Entitlement **opt-in** (`AddRoute` eksplisit per client×source_account×method, `DisableRoute`=soft-disable; tak ada auto-allow-all) — teruji
+- [ ] **Auth** middleware per channel (B5): cocokkan `api_token_hash` dari metadata/header → set `channel` context — token issuance **sudah ada**, middleware intersepsi request **belum**
+- [x] **Idempotency logic** (`Disbursement.GetByIdempotencyKey` + `model.ErrNotFound` sentinel; idempotent replay di `Disburse`) — teruji · [ ] **Redis distributed lock** anti double-submit — **belum** (Redis interface masih `HealthCheck` saja)
+- [x] **Domain model** + **status FSM** enum (CREATED→SUBMITTED→PENDING→SUCCESS/FAILED/CANCELLED/REFUNDED/NEEDS_INVESTIGATION/REJECTED) — dipakai konsisten di `Disburse`/`GetStatus`; guard transisi FSM formal belum ada
+- [ ] **Validator limit teknis** (amount min/max + jam operasional per method) — entitlement (B6) sudah ✅ via `findRoute`, limit teknis **belum**
+- [x] Kontrak **gRPC** 8 RPC consumer (`GetAllowedRoutes`, `InquiryBeneficiary`, `Disburse`, `DisburseBatch`, `GetStatus`, `GetBatchStatus`, `BalanceInquiry`, `HistoryList`) — proto+REST lengkap; **usecase**: `GetAllowedRoutes`/`GetStatus`/`GetBatchStatus`/`Disburse` GREEN, 4 sisanya masih panic
 
 ---
 
-## M3 — OCBC Provider Adapter — Track A (BIFAST + Intrabank) 🟢
+## M3 — OCBC Provider Adapter — Track A (BIFAST + Intrabank) 🟢 — 🟡 ORKESTRASI ✅, ADAPTER NYATA ⏳
 
-- [ ] Interface **`DisbursementProvider`** (`InquiryBeneficiary`, `Submit`, `GetStatus`, `BalanceInquiry`, `HistoryList`)
-- [ ] OCBC adapter `repository/provider/ocbc/`: token B2B (Redis, **auto-refresh <900s**), **Transaction Signature HMAC_SHA512** (`pkg/signature`), **mTLS** (`pkg/tls`)
-- [ ] Generator **`partnerReferenceNo`** (unik global, prefix OCBC) + **`X-EXTERNAL-ID`** (numerik, unik/hari)
-- [ ] Chaining **Inquiry → simpan `referenceNo` → Submit**
-- [ ] Isi **`originatorInfos`** (PPATK) dari `channel_registry` (config per-channel, OQ-4)
-- [ ] Implement **BIFAST** (Inquiry-external → transfer-interbank) 🟢
-- [ ] Implement **Intrabank/Overbooking** (account-inquiry-internal → transfer-intrabank) 🟢
-- [ ] Mapping response code (00/01/02/03/04/05/06/07) + sinyal dedup `409...01` (dup partnerRef → cek status, jangan retry) / `409...00` (dup X-EXTERNAL-ID → regen, aman retry)
+> Usecase `Disburse` sudah orkestrasi lengkap (Inquiry→Submit chaining, mapping status, error handling) **teruji via mock**. Yang **belum**: adapter OCBC sungguhan (HTTP + signature + mTLS) — `repository/ocbc/implementor.go` masih `panic("unimplemented")`.
+
+- [ ] Interface **`DisbursementProvider`** — **2/5 method** (`InquiryBeneficiary`, `Submit` di `Ocbc` interface, dipakai `Disburse`); `GetStatus`/`BalanceInquiry`/`HistoryList` menyusul sesuai usecase terkait digarap
+- [ ] OCBC adapter `repository/ocbc/`: token B2B (Redis, **auto-refresh <900s**), **Transaction Signature HMAC_SHA512** (`pkg/signature`), **mTLS** (`pkg/tls`) — **stub panic, belum diimplement**
+- [ ] Generator **`partnerReferenceNo`** + **`X-EXTERNAL-ID`** — fungsi ada (`usecase/reference.go`) tapi pakai **prefix placeholder "BRK"**, bukan 4-digit prefix OCBC asli (pending M1 procurement)
+- [x] Chaining **Inquiry → simpan `referenceNo` → Submit** — orkestrasi di usecase `Disburse` teruji (`submitToProvider`)
+- [x] Isi **`originatorInfos`** (PPATK) dari `channel_registry` — `resolveUltimateSender` fallback ke `ch.Originator` (OQ-4), teruji
+- [ ] Implement **BIFAST** (Inquiry-external → transfer-interbank) 🟢 — HTTP call nyata belum ada
+- [ ] Implement **Intrabank/Overbooking** 🟢 — HTTP call nyata belum ada
+- [ ] Mapping response code (00/01/02/03/04/05/06/07) + sinyal dedup `409...01`/`409...00` — target mapping (`model.TxnStatus`) sudah dipakai orkestrasi, tapi belum ada kode nyata yang memetakan response OCBC asli
 - [ ] **Circuit breaker** + retry (retry **hanya** dari PENDING, tidak dari FAILED/REJECTED)
 
 ---
@@ -154,7 +157,7 @@ related:
 
 ## M8 — Testing ⭐
 
-- [ ] Unit + integration test (usecase, validator, FSM, adapter)
+- [~] Unit test usecase — **12/16 GREEN via TDD** (`GetAllowedRoutes`/`GetStatus`/`GetBatchStatus`/`Disburse` + 8 Admin API). Sisa panic: `DisburseBatch`, `InquiryBeneficiary`, `BalanceInquiry`, `HistoryList`. Validator/FSM/adapter integration test **belum** (adapter masih stub)
 - [ ] **Sandbox** test channel Track A (success / pending / timeout / not-found)
 - [ ] Verifikasi signature via **Postman** (`/v1.0/transaction-signature/b2b`)
 - [ ] Test **idempotency & concurrency** (double-submit, duplicate `X-EXTERNAL-ID` & `partnerReferenceNo`)
