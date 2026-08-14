@@ -35,28 +35,31 @@ MVP diluncurkan **hyper-local**: hanya untuk satu kompleks hunian (Rusun ASN PUP
 - **FR-U02 Verifikasi Email**: User wajib klik link/kode verifikasi email sebelum bisa login dan order. Ini satu-satunya mekanisme verifikasi untuk MVP (tidak ada verifikasi KTP/identitas).
 - **FR-U03 Login**.
 - **FR-U04 Browsing service catalog**: List service yang tersedia, dikelompokkan per kategori (Cleaning, Install Heater, dll), dengan harga tetap per service (diinput manual oleh Admin).
-- **FR-U05 Order**: User pilih service, **pilih tanggal & jam** (scheduling terjadi di titik order, sebelum bayar), lalu bayar via QRIS dinamis (Midtrans).
-- **FR-U06 List order aktif**: Menampilkan order dengan status: `waiting_for_payment`, `scheduled`, `in_progress`.
+- **FR-U05 Order**: User pilih service, **pilih tanggal & jam** (scheduling terjadi di titik order, sebelum bayar), isi **alamat** (field bebas: Tower/Unit/Lantai — tidak ada validasi ketersediaan Mitra di titik ini), lalu bayar via QRIS dinamis (Midtrans). Kalau QRIS tidak dibayar sampai **expiry default Midtrans**, order otomatis pindah status `expired` (lihat FR-C06) dan slot jadwal free lagi — User perlu order ulang.
+- **FR-U06 List order aktif**: Menampilkan order dengan status: `waiting_for_payment`, `scheduled`, `in_progress`. Order `expired` **tidak** termasuk di list ini (dianggap gagal/batal, bukan aktif maupun selesai).
 - **FR-U07 List order selesai**: Order dengan status `complete` (termasuk yang sudah/belum direview/komplain).
 - **FR-U08 Order detail**: Detail satu order — service, harga, jadwal, Mitra assigned, status, foto bukti before/after (kalau sudah ada).
-- **FR-U09 Rating**: Setelah order complete, User bisa kasih rating 1–5 bintang (opsional). **Kalau rating ≤ 3, komentar wajib diisi.** Rating bukan syarat wajib untuk order dianggap selesai di sisi User.
-- **FR-U10 Complain**: User bisa ajukan komplain dalam window 3 hari setelah order complete. Complain masuk status pending untuk direview manual oleh Admin.
+- **FR-U09 Rating**: Setelah order complete, User bisa kasih rating 1–5 bintang (opsional). **Kalau rating ≤ 3, komentar wajib diisi.** Rating bukan syarat wajib untuk order dianggap selesai di sisi User. **Begitu rating diberikan, window complain untuk order tsb otomatis tertutup** — User tidak bisa ajukan complain lagi setelah rating (lihat FR-U10).
+- **FR-U10 Complain**: User bisa ajukan komplain dalam window 3 hari setelah order complete, **selama belum memberi rating untuk order tsb** (rating menutup window complain — lihat FR-U09), dengan **upload foto/bukti tambahan (opsional)**. Complain masuk status pending untuk direview manual oleh Admin.
 
 ### 3.2 Admin
 
 - **FR-A01 Login**.
 - **FR-A02 List Mitra**: Melihat daftar Mitra terdaftar beserta kategori/skill masing-masing.
 - **FR-A03 List order aktif**: Melihat semua order yang perlu ditindaklanjuti (termasuk yang sudah dibayar dan butuh pairing).
-- **FR-A04 Pairing order ke Mitra**: Setelah order berstatus `PAID`, Admin pilih Mitra yang sesuai (difilter berdasarkan kategori/skill yang match dengan service order) untuk di-assign.
-- **FR-A05 Kelola service catalog**: Admin bisa tambah/edit service — set harga yang ditampilkan ke User, set payout untuk Mitra (**diinput manual**, tidak pakai rumus persentase otomatis), dan set kategori/skill service tsb.
-- **FR-A06 Review Complain**: Admin melihat komplain masuk, investigasi manual, putuskan **refund penuh/sebagian atau tolak**. Selama status pending, dana payout Mitra terkait tetap ditahan (block withdrawal).
+- **FR-A04 Pairing order ke Mitra**: Setelah order berstatus `PAID`, Admin pilih Mitra yang sesuai (difilter berdasarkan kategori/skill yang match dengan service order) untuk di-assign. Sistem **memvalidasi tidak ada bentrok jadwal** — rentang waktu order (jam mulai + estimasi durasi service, lihat FR-A05) tidak boleh tumpang tindih dengan order aktif (`scheduled`/`in_progress`) lain milik Mitra yang sama; assign ditolak kalau bentrok. **Assign dianggap final** — tidak ada langkah accept/reject dari Mitra; notifikasi WA bersifat info, bukan permintaan konfirmasi (lihat Decision Log #29).
+- **FR-A05 Kelola service catalog**: Admin bisa tambah/edit/**nonaktifkan** service — set harga yang ditampilkan ke User, set payout untuk Mitra (**diinput manual**, tidak pakai rumus persentase otomatis), set kategori/skill service tsb, dan set **estimasi durasi kerja aktif** (tidak termasuk waktu tunggu/curing pasif seperti keringnya karpet — dipakai untuk validasi bentrok jadwal Mitra di FR-A04). Service **tidak bisa dihapus permanen** (soft-delete via nonaktifkan saja), supaya order lama yang reference ke service tsb tetap valid (lihat NFR-06).
+- **FR-A06 Review Complain**: Admin melihat komplain masuk (termasuk foto bukti dari User kalau ada), investigasi manual, putuskan **refund penuh/sebagian atau tolak**. Selama status pending, dana payout Mitra terkait tetap ditahan (block withdrawal). Kalau refund disetujui, dana diambil dari **margin platform** (tidak memotong payout Mitra) dan ditransfer **manual** oleh Admin di luar sistem — sistem hanya mencatat status refund. **Tidak ada SLA/timeout eksplisit** untuk review ini — payout tertahan sampai Admin memutuskan, kapan pun itu (lihat Decision Log #26).
+
+**Catatan — No-show**: Penanganan no-show (Mitra tidak datang / User tidak di lokasi saat jadwal) ditangani **manual oleh Admin di luar sistem**, sama seperti order cancellation (#14) — tidak ada status order atau FR khusus untuk no-show di MVP (lihat Decision Log #27).
 
 ### 3.3 Mitra
 
-- **FR-M01 Registrasi Mitra** *(implisit — perlu didefinisikan lebih lanjut, lihat Open Questions)*: Mitra didaftarkan (oleh Admin atau self-register lalu diverifikasi Admin) dengan kategori/skill yang dikuasai.
+- **FR-M01 Registrasi Mitra**: Mitra **self-register** (data diri, kategori/skill, rekening bank) dengan status awal `pending_approval`. Admin review dan approve/reject sebelum Mitra bisa menerima order.
 - **FR-M02 Start order**: Mitra mulai kerja setelah **upload foto bukti kondisi "before"** — wajib, jadi syarat status order berubah ke `in_progress`.
-- **FR-M03 Complete order**: Mitra selesaikan order setelah **upload foto bukti hasil "after"** — wajib, jadi syarat status order berubah ke `complete`.
-- **FR-M04 Withdrawal**: Mitra bisa withdraw payout setelah **salah satu terpenuhi lebih dulu**: (a) User memberi rating, atau (b) window komplain 3 hari lewat tanpa komplain diajukan. Kalau ada komplain pending, withdrawal untuk order tsb diblokir sampai Admin memutuskan.
+- **FR-M03 Complete order**: Mitra selesaikan order setelah **upload foto bukti hasil "after"** — wajib, jadi syarat status order berubah ke `complete`. Untuk servis dengan hasil yang butuh waktu tunggu pasif (mis. cuci karpet yang keringnya lama), foto "after" diambil **begitu kerja aktif selesai** (belum tentu hasil akhir sudah kering/jadi) — Mitra tidak perlu balik lagi, dan langsung available untuk order lain setelahnya.
+- **FR-M04 Withdrawal**: Mitra bisa request withdraw payout setelah **salah satu terpenuhi lebih dulu**: (a) User memberi rating, atau (b) window komplain 3 hari lewat tanpa komplain diajukan. Kalau ada komplain pending, withdrawal untuk order tsb diblokir sampai Admin memutuskan. Pencairan dana **manual** oleh Admin/Owner di luar sistem (transfer bank) untuk MVP — sistem update status `withdrawn` setelah transfer dilakukan.
+- **FR-M05 Login**: Mitra login dengan **email + password**, kredensial yang sama diisi saat registrasi (FR-M01) — pola auth sama seperti User (FR-U03) dan Admin (FR-A01) (lihat Decision Log #30).
 
 ### 3.4 Konfigurasi (Config)
 
@@ -65,6 +68,8 @@ MVP diluncurkan **hyper-local**: hanya untuk satu kompleks hunian (Rusun ASN PUP
 - **FR-C03 Payment gateway**: QRIS dinamis via **Midtrans**.
 - **FR-C04 Notifikasi**: Email ke User (registrasi, verifikasi, status order, dll). WhatsApp ke Mitra (konfirmasi order start & complete).
 - **FR-C05 Service & skill category**: Master data kategori service (Cleaning, Install Heater, dll) yang juga dipakai sebagai skill tag Mitra untuk keperluan pairing (FR-A04).
+- **FR-C06 Order expiry QRIS**: Order dengan status `waiting_for_payment` yang tidak dibayar sampai **expiry default Midtrans** otomatis pindah status `expired` lewat webhook Midtrans — tidak ada timer/durasi custom yang dikonfigurasi manual oleh Admin.
+- **FR-C07 Reset Password**: User, Admin, dan Mitra bisa request reset password lewat **email reset link** self-service — reuse pola verifikasi email User (FR-U02) (lihat Decision Log #31).
 
 ---
 
@@ -75,6 +80,7 @@ MVP diluncurkan **hyper-local**: hanya untuk satu kompleks hunian (Rusun ASN PUP
 - **NFR-03 Data integrity dana**: Karena ada model escrow (dana ditahan sebelum payout ke Mitra), sistem harus punya audit trail yang jelas untuk setiap perubahan status dana (paid → held → unlocked → withdrawn / refunded).
 - **NFR-04 Auditability foto bukti**: Foto before/after dari Mitra harus tersimpan permanen (tidak bisa dihapus/replace setelah submit) karena jadi evidence untuk resolusi komplain.
 - **NFR-05 Security**: Password hashing, session/token management untuk 3 jenis actor (User, Admin, Mitra) — kemungkinan besar butuh auth terpisah per role.
+- **NFR-06 Referential integrity histori order**: Order harus tetap bisa menampilkan detail service (nama, harga, payout) walau service tsb sudah dinonaktifkan Admin — service catalog tidak boleh hard-delete (lihat Decision Log #21).
 
 ---
 
@@ -94,6 +100,25 @@ MVP diluncurkan **hyper-local**: hanya untuk satu kompleks hunian (Rusun ASN PUP
 | 10 | Scope area | Hyper-local — 1 kompleks hunian (Rusun ASN PUPR Pasar Jumat), bukan per kota |
 | 11 | "Order prove" | Foto wajib sebelum (start) dan sesudah (complete) kerja Mitra |
 | 12 | Rating | 1–5 bintang, opsional; komentar wajib kalau rating ≤ 3 |
+| 13 | Registrasi Mitra | Self-register (isi data, kategori/skill, rekening bank) → status `pending_approval` → Admin approve/reject |
+| 14 | Order cancellation | Belum didukung di MVP — pembatalan ditangani manual oleh Admin di luar sistem |
+| 15 | No Mitra match | Tidak ada validasi ketersediaan Mitra saat checkout. Order tetap `scheduled` tanpa Mitra ter-assign, Admin follow-up manual |
+| 16 | Concurrency Mitra | One Mitra satu order aktif per jam yang tumpang tindih — divalidasi sistem saat Admin pairing |
+| 17 | Disbursement Mitra | Manual transfer oleh Admin/Owner di luar sistem untuk MVP; status `withdrawn` diupdate manual. Midtrans **Payouts API** (dulu Iris) sudah mendukung transfer real-time ke rekening bank — dipertimbangkan untuk integrasi di fase berikutnya |
+| 18 | Refund | Manual transfer oleh Admin ke User untuk MVP, bukan via Midtrans refund API |
+| 19 | Bukti complain | User bisa upload foto/bukti tambahan (opsional) saat ajukan complain, selain foto before/after dari Mitra |
+| 20 | Struktur alamat | Field bebas teks (Tower/Unit/Lantai) diisi User saat order — bukan struktur dropdown relasional, supaya mudah diperluas ke multi-lokasi nanti |
+| 21 | Soft-delete service catalog | Service **tidak pernah di-hard-delete**. Admin hanya bisa nonaktifkan (`is_active = false`) — service hilang dari catalog yang dilihat User, tapi record tetap ada supaya order lama yang reference ke service tsb tidak orphan/berdiri sendiri |
+| 22 | Rating vs. hak complain | Begitu User kasih rating, window complain untuk order tsb **otomatis tertutup**. User harus pilih: rating dulu (berarti puas, payout Mitra langsung unlock) atau tahan dulu kalau masih ragu/ingin komplain |
+| 23 | Sumber dana refund | Refund ke User **selalu dari margin platform** (Owner), tidak memotong payout Mitra — dua arah uang (refund ke User vs payout ke Mitra) independen |
+| 24 | Durasi service | Admin input **estimasi durasi kerja aktif** (menit/jam) per service saat kelola catalog (FR-A05) — **tidak termasuk waktu tunggu/curing pasif** (mis. keringnya karpet setelah dicuci). Dipakai sistem untuk hitung rentang waktu order saat validasi bentrok jadwal Mitra (FR-A04) |
+| 25 | Foto "after" untuk servis dengan waktu tunggu | Diambil **begitu kerja aktif selesai** (hasil belum tentu kering/jadi sepenuhnya, mis. karpet masih basah), bukan menunggu Mitra balik lagi. Order langsung `complete`, Mitra langsung available untuk order lain. Kualitas hasil akhir dinilai User sendiri lewat rating |
+| 26 | SLA review complain oleh Admin | **Tidak ada SLA/timeout eksplisit.** Admin (Owner sendiri) review kapan saja secara manual; payout Mitra tetap tertahan sampai keputusan keluar, seberapa pun lamanya. Tidak ada auto-resolve, supaya tidak ada keputusan refund/reject tanpa investigasi |
+| 27 | Penanganan no-show (Mitra tidak datang / User tidak di lokasi) | Ditangani **manual oleh Admin di luar sistem** — User/Mitra kontak Admin langsung (WA/telepon), Admin putuskan & proses refund manual kalau perlu. Tidak ada status atau FR khusus untuk no-show di MVP, konsisten dengan pola order cancellation (#14) |
+| 28 | Expiry order QRIS belum dibayar | Pakai **expiry default dari Midtrans** (bukan custom timer sistem). Sistem dengarkan webhook expired dari Midtrans, update status order -> `expired`. Tidak perlu konfigurasi durasi manual oleh Admin |
+| 29 | Mitra accept/reject order | **Assign dianggap final** — tidak ada konfirmasi accept/reject dari Mitra. Notifikasi WA (FR-A04) bersifat info, bukan permintaan konfirmasi. Kalau Mitra berhalangan mendadak, ditangani manual (kontak Admin di luar sistem, konsisten #14/#27) |
+| 30 | Kredensial login Mitra | **Email + password**, sama seperti User dan Admin (FR-U01–U03, FR-A01) — satu pola auth untuk semua role. Notifikasi operasional Mitra tetap lewat WhatsApp (FR-C04), terpisah dari mekanisme login |
+| 31 | Forgot/reset password | **Email reset link**, self-service, berlaku untuk User, Admin, dan Mitra — reuse pola verifikasi email User (FR-U02) |
 
 ---
 
@@ -137,18 +162,18 @@ MVP diluncurkan **hyper-local**: hanya untuk satu kompleks hunian (Rusun ASN PUP
 
 ## 7. Open Questions / TODO untuk Fase Berikutnya
 
-Item berikut **belum diputuskan** dan perlu dijawab sebelum atau selama fase design/implementasi:
+Resolusi sesi lanjutan (2026-08-11) — lihat Decision Log #13–20 di §5 untuk detail keputusan:
 
-1. **[TEKNIS]** Apakah Midtrans API mendukung **automatic disbursement/payout** ke rekening Mitra, atau payout harus dilakukan manual (transfer manual oleh Admin/Owner di luar sistem, lalu status "withdrawn" diupdate manual)? — Perlu riset API Midtrans di fase design.
-2. **Registrasi Mitra**: Apakah Mitra self-register (lalu diverifikasi/approve Admin) atau didaftarkan langsung oleh Admin (invite-only)? Data apa saja yang dibutuhkan (rekening bank untuk payout, dokumen identitas, dll)?
-3. **Refund mechanism**: Kalau Admin approve refund, apakah refund dieksekusi otomatis via Midtrans API, atau manual transfer ke User?
-4. **Order cancellation**: Apakah User bisa cancel order sebelum dibayar / setelah dibayar tapi sebelum Mitra mulai kerja? Apa konsekuensinya (refund otomatis)?
-5. **No Mitra available**: Kalau tidak ada Mitra dengan skill yang cocok/available di jadwal yang dipilih User, apa yang terjadi? (auto-reject, Admin reschedule, dll)
-6. **Multiple order per Mitra**: Apakah satu Mitra bisa pegang beberapa order dalam waktu bersamaan/hari yang sama, atau one-at-a-time?
-7. **Evidence komplain**: Apakah User bisa upload foto/bukti tambahan saat mengajukan komplain, atau Admin hanya mengandalkan foto before/after dari Mitra?
-8. **Role Owner/Admin di masa depan**: Kapan dan bagaimana pemisahan role Owner (financial report, config) vs Admin operasional (assign order) akan diaktifkan?
-9. **Ekspansi lokasi**: Struktur data untuk lokasi (nama kompleks, unit/tower/lantai) — perlu dirancang supaya mudah ditambah lokasi baru di masa depan meski MVP cuma 1 lokasi?
-10. **Alamat dalam 1 kompleks**: Bagaimana User menentukan alamat spesifik (nomor unit/tower/lantai) dalam Rusun ASN PUPR Pasar Jumat saat order?
+1. ✅ **[TEKNIS] Disbursement Midtrans** — Diriset: Midtrans **Payouts API** (dulu Iris) mendukung transfer real-time ke rekening bank (`create transfer` → `approve transfer`). Keputusan MVP: tetap **manual** dulu (lihat #17); integrasi Payouts API jadi kandidat improvement fase berikutnya.
+2. ✅ **Registrasi Mitra** — Self-register + approval Admin. Lihat #13.
+3. ✅ **Refund mechanism** — Manual transfer oleh Admin, bukan via Midtrans API. Lihat #18.
+4. ✅ **Order cancellation** — Belum didukung di MVP, ditangani manual oleh Admin. Lihat #14.
+5. ✅ **No Mitra available** — Tidak ada validasi ketersediaan saat checkout; order tetap pending, Admin follow-up manual. Lihat #15.
+6. ✅ **Multiple order per Mitra** — One-at-a-time, divalidasi sistem (tolak assign kalau jadwal bentrok). Lihat #16.
+7. ✅ **Evidence komplain** — User bisa upload foto/bukti tambahan (opsional). Lihat #19.
+8. ⏳ **Role Owner/Admin di masa depan** — **Masih terbuka / deferred.** Bukan blocker MVP karena Owner memegang Admin sendiri untuk sekarang. Revisit saat sudah merekrut Admin operasional terpisah — perlu desain role permission granular (financial report vs operational assign) di fase itu.
+9. ✅ **Ekspansi lokasi** — Arah keputusan: alamat disimpan sebagai field bebas (bukan struktur relasional dropdown), supaya gampang ditambah field "kompleks" saat ekspansi ke lokasi lain. Detail skema tabel tetap didesain nanti di `/sa:design`. Lihat #20.
+10. ✅ **Alamat dalam 1 kompleks** — Field bebas teks: Tower/Unit/Lantai, diisi User saat order. Lihat #20.
 
 ---
 
