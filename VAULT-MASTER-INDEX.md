@@ -1,7 +1,7 @@
 # 📇 VAULT MASTER INDEX
 
-**Version:** 2.0  
-**Last Updated:** 2026-01-28  
+**Version:** 2.1  
+**Last Updated:** 2026-10-06  
 **Purpose:** Single source of truth untuk struktur vault - untuk Claude DAN Lukmanul Hakim
 
 ---
@@ -142,8 +142,13 @@ folders:
     claude_action: "Use for learning and skill development"
   
   - path: "04-Resources"
-    purpose: "Templates, references, tools"
-    claude_action: "Use for general resources and templates"
+    purpose: "Templates, references, tools, agent configs"
+    claude_action: "Use for general resources, templates, and agent configurations"
+    subfolders:
+      - "Templates/ - Document templates (RFC, ADR, meeting, etc.)"
+      - "References/ - Quick reference guides"
+      - "Tools/ - Development tools"
+      - "Agent-Configs/ - AI agent configuration files"
   
   - path: "05-Team"
     purpose: "Team management and leadership"
@@ -478,9 +483,9 @@ Tag dengan: `#project`, `#side-project` / `#business` / `#content`
 
 ---
 
-**Version:** 2.0  
+**Version:** 2.1  
 **Created:** 2026-01-28  
-**Last Updated:** 2026-01-28  
+**Last Updated:** 2026-10-06  
 **Maintained By:** Claude (Assistant)  
 **Reviewed By:** Lukmanul Hakim  
 **Update Frequency:** As needed when structure changes

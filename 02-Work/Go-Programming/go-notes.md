@@ -1,0 +1,8 @@
+- untuk config hanya di enable untuk yang digunakan saja
+	- db belum digunakan namun sudah active
+	- feature flage.
+	- cache tergenerate.
+	- masih ada gagal generate usecase (perintah generate masih panjang)
+	- midleware manual
+	- auto import hanya yang penting dan digunakan saja(mqtt, kafka, mysql, etc ...) intinya jangan terlalu besar.
+	- comand terpusat di mengo(improve bisa access mengo di tiap project)

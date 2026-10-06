@@ -1,0 +1,6 @@
+- brainstorm ide dari bisnis dan align dengan prd dan integration docs
+- jika contract sudah jadi (jalankan perintah init project) dev
+- rancang model (dto dan entity) AI
+- buat repository (add repository yang sudah di rancang) dev
+- implementasikan seluruh repository(iface, implement perfunction, AI)
+- 

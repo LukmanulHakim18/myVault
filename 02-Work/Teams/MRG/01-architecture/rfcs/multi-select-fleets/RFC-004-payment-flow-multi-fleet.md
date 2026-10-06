@@ -7,7 +7,7 @@ tags:
   - payment
   - upg
 created: '2026-03-18'
-updated: '2026-03-18'
+updated: '2026-06-18'
 status: draft
 author: Lukmanul Hakim
 team: MRG
@@ -64,7 +64,7 @@ User pilih multiple fleet:
   - BB_PRIME: 150k  ← tertinggi
   - SB: 120k
        ↓
-Order Orchestrator: Loop selected_fleets, cari harga tertinggi (150k)
+Order Orchestrator: Loop effective_fleets (post-upsell), cari harga tertinggi (150k)
        ↓
 Order Orchestrator → UPG: Lock 150k
        ↓
@@ -83,20 +83,26 @@ UPG charge 95k, release 55k
 
 ### 4.1. Logic
 
+Lock amount dihitung dari **`effective_fleets`** (sumber kebenaran fleet hasil VBO, post-upsell), **bukan** dari `selected_fleets` mentah pada request. Alasannya: pada alur Dynamic Fleet List (Fase 2), **upsell yang diterima mengubah fleet** (mis. BB → BB_PRIME) dan disimpan sebagai `effective_fleets` di session. Kalau lock dihitung dari `selected_fleets` mentah, amount jadi **salah** saat upsell diterima.
+
 ```go
-func (o *OrderOrchestrator) calculateLockAmount(selectedFleets []SelectedFleetRequest, snapshot *FleetPricingSnapshot) int64 {
+// SoT = effective_fleets dari VBO state (post-upsell), bukan selected_fleets request.
+func (o *OrderOrchestrator) calculateLockAmount(effectiveFleets []string, snapshot *FleetPricingSnapshot) int64 {
     var maxPrice int64 = 0
-    
-    for _, sf := range selectedFleets {
-        fleetPrice := snapshot.Fleets[sf.FleetCode]
-        if fleetPrice.TotalPrice > maxPrice {
-            maxPrice = fleetPrice.TotalPrice
+
+    for _, fleetCode := range effectiveFleets {
+        if fleetPrice := snapshot.Fleets[fleetCode].TotalPrice; fleetPrice > maxPrice {
+            maxPrice = fleetPrice
         }
     }
-    
+
     return maxPrice
 }
 ```
+
+> **Catatan Dynamic Fleet List (Fase 2):** pada flow dengan promo berlapis, basis harga lock = **harga penuh (pra-promo)** — diskon promo direalisasikan saat **redeem** di trip-complete (UPG release selisih). Detail di spec Dynamic Fleet List `endpoints/03-create-order.md` §4.1–§4.2 (keputusan GZ-D). RFC ini tetap memakai `TotalPrice` sebagai konsep "harga yang di-lock"; untuk Fase 2, `TotalPrice` = `price_summary.final_price` (harga penuh).
+>
+> **Identifier seleksi (Fase 2):** RFC ini mengiterasi `effective_fleets` per **`fleet_code`** (model multi-select dasar). Di Dynamic Fleet List, sumber kebenaran seleksi = **`item_id`** (id per baris harga dari Price Engine, disimpan di `selected_fleet`); lock mengiterasi item_id. Semantik "harga tertinggi" identik, hanya **key beda** (fleet_code vs item_id). Tipe kontrak `selected_fleet` direconcile di SMI-01 (`endpoints/00-session-manager-integration.md` §9).
 
 ### 4.2. Argo vs Fixed Price
 
@@ -177,6 +183,8 @@ Actual trip BB: 130k (melebihi estimasi).
 
 Harga yang di-charge adalah harga yang tersimpan di `order_fleet_pricing` saat create order, **bukan** harga terbaru dari Price Engine.
 
+> **Catatan Dynamic Fleet List (Fase 2):** yang disimpan = **price detail lengkap** (breakdown + snapshot promo overlay); basis charge = **harga penuh (pra-promo)**. Diskon promo **tidak** dikurangi saat create order, melainkan saat **redeem di trip-complete** → charge final = harga tersimpan (FIXED) / argo aktual (ESTIMATE) **− diskon promo redeemed**; UPG release selisih lock. **Kalau redeem gagal/tak bisa → OO olah ulang dari price detail tersimpan → charge penuh** (self-contained, tanpa sumber eksternal). Detail: `endpoints/03-create-order.md` §4.1 "Siklus harga".
+
 Ini memastikan:
 - User tidak "ditipu" dengan harga yang berubah
 - Konsistensi antara yang ditampilkan dan yang di-charge
@@ -245,7 +253,7 @@ type LockBalanceRequest struct {
     OrderID       string `json:"order_id"`
     BBID          string `json:"bbid"`
     PaymentMethod string `json:"payment_method"`
-    Amount        int64  `json:"amount"` // highest price dari selected fleets
+    Amount        int64  `json:"amount"` // highest price dari effective_fleets (post-upsell, §4.1)
 }
 ```
 

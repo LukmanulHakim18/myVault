@@ -1,0 +1,603 @@
+<title>Rent Revamp & Web Reservasi — Sharing Session</title>
+<style>
+  :root {
+    --bg: #F5F7FB;
+    --surface: #FFFFFF;
+    --surface-2: #EDF1F8;
+    --ink: #0E1C33;
+    --ink-soft: #4A5878;
+    --ink-faint: #7C89A6;
+    --line: #D8E0EE;
+    --accent: #1F5FE0;
+    --accent-deep: #123A8C;
+    --accent-wash: #E7EEFC;
+    --gold: #C7891A;
+    --gold-wash: #F7ECD3;
+    --success: #1E9E6A;
+    --success-wash: #E0F3EA;
+    --warn: #C4701A;
+    --warn-wash: #F8E9D8;
+    --shadow: 0 1px 2px rgba(14,28,51,.06), 0 8px 30px rgba(14,28,51,.08);
+    --font-display: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "Consolas", monospace;
+    --maxw: 1100px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0A1526;
+      --surface: #0F1E38;
+      --surface-2: #16294A;
+      --ink: #E8EEFA;
+      --ink-soft: #A6B6D6;
+      --ink-faint: #6C7EA0;
+      --line: #23375E;
+      --accent: #5B92FF;
+      --accent-deep: #9FC0FF;
+      --accent-wash: #13264A;
+      --gold: #E7B750;
+      --gold-wash: #2C2413;
+      --success: #4FCB92;
+      --success-wash: #102B22;
+      --warn: #E8A24E;
+      --warn-wash: #2C2013;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F5F7FB; --surface: #FFFFFF; --surface-2: #EDF1F8;
+    --ink: #0E1C33; --ink-soft: #4A5878; --ink-faint: #7C89A6; --line: #D8E0EE;
+    --accent: #1F5FE0; --accent-deep: #123A8C; --accent-wash: #E7EEFC;
+    --gold: #C7891A; --gold-wash: #F7ECD3;
+    --success: #1E9E6A; --success-wash: #E0F3EA; --warn: #C4701A; --warn-wash: #F8E9D8;
+    --shadow: 0 1px 2px rgba(14,28,51,.06), 0 8px 30px rgba(14,28,51,.08);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0A1526; --surface: #0F1E38; --surface-2: #16294A;
+    --ink: #E8EEFA; --ink-soft: #A6B6D6; --ink-faint: #6C7EA0; --line: #23375E;
+    --accent: #5B92FF; --accent-deep: #9FC0FF; --accent-wash: #13264A;
+    --gold: #E7B750; --gold-wash: #2C2413;
+    --success: #4FCB92; --success-wash: #102B22; --warn: #E8A24E; --warn-wash: #2C2013;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.45);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    overflow: hidden;
+  }
+
+  /* ---------- Deck shell ---------- */
+  .deck { position: fixed; inset: 0; }
+  .slide {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    padding: clamp(28px, 5vw, 72px);
+    opacity: 0;
+  }
+  .slide.active { display: flex; }
+  @media (prefers-reduced-motion: no-preference) {
+    .slide.active { animation: slideIn .42s cubic-bezier(.22,.61,.36,1) both; }
+    .slide.active .rise { animation: rise .5s cubic-bezier(.22,.61,.36,1) both; }
+    .slide.active .rise:nth-child(2) { animation-delay: .05s; }
+    .slide.active .rise:nth-child(3) { animation-delay: .1s; }
+    .slide.active .rise:nth-child(4) { animation-delay: .15s; }
+    .slide.active .rise:nth-child(5) { animation-delay: .2s; }
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .slide { opacity: 1; }
+
+  .inner { width: 100%; max-width: var(--maxw); margin: 0 auto; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+
+  /* ---------- Typography ---------- */
+  .eyebrow {
+    font-family: var(--font-mono); font-size: clamp(11px, 1.1vw, 13px);
+    letter-spacing: .22em; text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 10px; margin: 0 0 18px;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 2px; background: var(--accent); border-radius: 2px; }
+  h1 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(34px, 6.5vw, 74px); line-height: .98; letter-spacing: -.025em;
+    margin: 0; text-wrap: balance;
+  }
+  h2 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(26px, 4.2vw, 46px); line-height: 1.02; letter-spacing: -.02em;
+    margin: 0 0 6px; text-wrap: balance;
+  }
+  .lead { font-size: clamp(15px, 1.7vw, 20px); color: var(--ink-soft); line-height: 1.5; max-width: 62ch; margin: 14px 0 0; }
+  p { line-height: 1.55; }
+  .mono { font-family: var(--font-mono); }
+  .slide-head { margin-bottom: clamp(18px, 3vh, 34px); }
+  .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* ---------- Chrome (progress, dots, counter) ---------- */
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 40; transition: width .4s cubic-bezier(.22,.61,.36,1); }
+  .chrome { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 16px; z-index: 40; pointer-events: none; }
+  .dots { display: flex; gap: 8px; pointer-events: auto; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0; background: var(--line); cursor: pointer; transition: transform .2s, background .2s; }
+  .dot:hover { transform: scale(1.35); background: var(--ink-faint); }
+  .dot.on { background: var(--accent); transform: scale(1.35); }
+  .counter { position: fixed; bottom: 16px; right: 22px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); z-index: 40; font-variant-numeric: tabular-nums; }
+  .brandmark { position: fixed; top: 20px; right: 22px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); z-index: 40; display: flex; align-items: center; gap: 8px; }
+  .brandmark .bd { width: 10px; height: 10px; border-radius: 3px; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
+  .navzone { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 30; cursor: pointer; background: transparent; border: none; }
+  .navzone.prev { left: 0; } .navzone.next { right: 0; }
+  .theme-toggle { position: fixed; top: 16px; left: 22px; z-index: 41; background: var(--surface); color: var(--ink-soft); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; cursor: pointer; box-shadow: var(--shadow); }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  /* ---------- Reusable ---------- */
+  .grid { display: grid; gap: clamp(12px, 1.6vw, 20px); }
+  .cards-2 { grid-template-columns: repeat(2, 1fr); }
+  .cards-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 820px) { .cards-2, .cards-3 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: clamp(16px, 1.8vw, 24px); box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 8px; font-family: var(--font-display); font-size: clamp(16px,1.9vw,21px); font-weight: 700; letter-spacing: -.01em; }
+  .card p { margin: 0; color: var(--ink-soft); font-size: clamp(13px,1.4vw,15.5px); }
+  .card .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); display: inline-block; margin-bottom: 10px; }
+  .card.gold .tag { color: var(--gold); }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11.5px; padding: 3px 10px; border-radius: 999px; letter-spacing: .04em; }
+  .pill.done { background: var(--success-wash); color: var(--success); }
+  .pill.draft { background: var(--warn-wash); color: var(--warn); }
+  .pill.info { background: var(--accent-wash); color: var(--accent); }
+
+  ul.clean { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  ul.clean li { display: flex; gap: 12px; align-items: flex-start; font-size: clamp(14px,1.5vw,17px); line-height: 1.45; color: var(--ink-soft); }
+  ul.clean li b { color: var(--ink); font-weight: 700; }
+  ul.clean .n { flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--accent-wash); color: var(--accent); font-family: var(--font-mono); font-size: 13px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
+  ul.clean .ck { flex: none; color: var(--success); font-weight: 800; margin-top: 2px; }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: clamp(12.5px,1.4vw,15px); }
+  table.tbl th, table.tbl td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  table.tbl th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+  table.tbl td { color: var(--ink-soft); }
+  table.tbl td .mono, table.tbl td strong { color: var(--ink); }
+  table.tbl tbody tr:last-child td { border-bottom: none; }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+
+  .idbadge { font-family: var(--font-mono); font-weight: 700; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; font-size: clamp(12px,1.4vw,15px); color: var(--ink); white-space: nowrap; }
+  .idbadge .p { color: var(--accent); }
+
+  /* ---------- Architecture diagram ---------- */
+  .arch { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .arch { grid-template-columns: repeat(2, 1fr); } }
+  .zone { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); position: relative; }
+  .zone > .zt { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+  .zone > .zt::before { content: ""; width: 9px; height: 9px; border-radius: 3px; background: var(--zc, var(--accent)); }
+  .svc { font-family: var(--font-mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line); border-left: 3px solid var(--zc, var(--accent)); border-radius: 7px; padding: 7px 10px; margin-bottom: 7px; color: var(--ink); }
+  .svc:last-child { margin-bottom: 0; }
+  .svc.dim { color: var(--ink-faint); border-left-color: var(--ink-faint); }
+  .flowlist { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px 22px; margin-top: 16px; }
+  @media (max-width: 820px){ .flowlist { grid-template-columns: 1fr; } }
+  .flow { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+  .flow .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--accent); background: var(--accent-wash); padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+  .flow .arw { color: var(--ink-faint); font-family: var(--font-mono); }
+
+  /* ---------- Flow steps (order flow) ---------- */
+  .steps { display: flex; flex-direction: column; gap: 10px; }
+  .step { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); }
+  .step .num { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: #fff; display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 14px; }
+  .step .txt { font-size: clamp(13px,1.5vw,16px); color: var(--ink-soft); }
+  .step .txt b { color: var(--ink); }
+  .step .txt .mono { color: var(--accent-deep); font-size: .92em; }
+
+  /* ---------- Split payment compare ---------- */
+  .vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; }
+  @media (max-width: 820px){ .vs { grid-template-columns: 1fr; } .vs .vsmid { display:none; } }
+  .vsmid { display: grid; place-items: center; padding: 0 18px; font-family: var(--font-mono); color: var(--ink-faint); font-size: 12px; letter-spacing: .1em; }
+  .col { padding: 22px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); }
+  .col.a { border-top: 4px solid var(--success); }
+  .col.b { border-top: 4px solid var(--gold); }
+  .col h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: clamp(18px,2.2vw,24px); }
+  .col .sub { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); margin-bottom: 14px; }
+  .col p { margin: 0; color: var(--ink-soft); font-size: clamp(13px,1.4vw,15px); }
+
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-wash); border-radius: 0 12px 12px 0; padding: 14px 18px; margin-top: 18px; font-size: clamp(13px,1.5vw,16px); color: var(--ink); }
+  .callout .mono { color: var(--accent-deep); }
+
+  .foot-note { margin-top: auto; padding-top: 22px; color: var(--ink-faint); font-size: 12.5px; font-family: var(--font-mono); }
+
+  .hint { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); margin-top: 30px; letter-spacing: .04em; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .key { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 2px 8px; color: var(--ink-soft); background: var(--surface); }
+
+  .metarow { display: flex; gap: 26px; flex-wrap: wrap; margin-top: 28px; }
+  .metarow .m .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+  .metarow .m .v { font-size: clamp(15px,1.7vw,19px); font-weight: 700; margin-top: 3px; }
+
+  .titlebg { position: absolute; inset: 0; overflow: hidden; z-index: -1; opacity: .5; }
+</style>
+
+<div class="progress" id="progress"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">◐ Tema</button>
+<div class="brandmark"><span class="bd"></span> Bluebird · MRG</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 · TITLE -->
+  <section class="slide">
+    <div class="inner">
+      <div class="rise eyebrow">Sharing Session · Architecture</div>
+      <h1 class="rise">Rent Revamp<br>&amp; Web Reservasi</h1>
+      <p class="rise lead">Satu backend MRG untuk dua platform booking Bluebird — arsitektur, model booking, dan payment flow yang membuatnya konsisten.</p>
+      <div class="rise metarow">
+        <div class="m"><div class="k">Pembicara</div><div class="v">Lukmanul Hakim</div></div>
+        <div class="m"><div class="k">Tim</div><div class="v">MRG · Architecture</div></div>
+        <div class="m"><div class="k">Periode</div><div class="v">Juli 2026</div></div>
+      </div>
+      <div class="rise hint"><span class="key">←</span><span class="key">→</span> navigasi · <span class="key">Space</span> lanjut · <span class="key">F</span> fullscreen</div>
+    </div>
+  </section>
+
+  <!-- 2 · AGENDA -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">Agenda</div>
+        <h2>Yang akan kita bahas</h2>
+      </div>
+      <div class="grid cards-2">
+        <ul class="clean rise">
+          <li><span class="n">1</span><div><b>Overview</b> — dua platform, satu backend</div></li>
+          <li><span class="n">2</span><div><b>Produk &amp; Use Case</b></div></li>
+          <li><span class="n">3</span><div><b>Perbandingan</b> Web vs Rent Revamp</div></li>
+          <li><span class="n">4</span><div><b>Model Booking &amp; Order</b> — Two-Level ID</div></li>
+          <li><span class="n">5</span><div><b>Context Diagram</b> arsitektur MRG</div></li>
+        </ul>
+        <ul class="clean rise">
+          <li><span class="n">6</span><div><b>Order Flow</b> end-to-end</div></li>
+          <li><span class="n">7</span><div><b>Reserved Budget ECV</b> — pre-order charge</div></li>
+          <li><span class="n">8</span><div><b>Push HO</b> — siapa yang push &amp; timing</div></li>
+          <li><span class="n">9</span><div><b>Keputusan, Pelajaran &amp; Roadmap</b></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · OVERVIEW -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">01 · Overview</div>
+        <h2>Dua platform, satu backend</h2>
+        <p class="lead">Web Reservasi dan Rent Revamp berbagi backend MRG yang sama — termasuk sistem ID, order orchestrator, dan payment flow. Yang membedakan hanyalah channel &amp; produk.</p>
+      </div>
+      <div class="grid cards-2">
+        <div class="card rise">
+          <span class="tag">Web · via ocelot</span>
+          <h3>Web Reservasi</h3>
+          <p>Booking via web (lewat gateway <span class="mono">ocelot</span>), <b>tanpa login</b>. Fokus <b>Goldenbird</b>: Airport Transfer, Hourly, Daily. Pembayaran via <b>Nicepay</b> payment link.</p>
+        </div>
+        <div class="card gold rise">
+          <span class="tag">MyBB · via MRG API GW</span>
+          <h3>Rent Revamp — MyBB</h3>
+          <p>Rental via aplikasi <b>MyBB</b> (<b>dengan login</b>) yang nge-hit <b>MRG API Gateway</b>. <b>BB</b> &amp; <b>SB</b> (hourly), <b>GB</b> (hourly &amp; daily). Immediate hanya untuk SB &amp; BB.</p>
+        </div>
+      </div>
+      <div class="callout rise">Keduanya berbagi <b>backend, tabel order, &amp; Two-Level ID</b> yang sama di <span class="mono">orderorchestrator</span> — yang berbeda: gateway, katalog produk, mode order, pembayaran, &amp; siapa yang push HO.</div>
+    </div>
+  </section>
+
+  <!-- 4 · PRODUCTS -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">02 · Produk &amp; Use Case</div>
+        <h2>Produk &amp; use case</h2>
+      </div>
+      <div class="grid cards-2">
+        <div class="tbl-wrap rise">
+          <table class="tbl">
+            <thead><tr><th>Web Reservasi</th><th>Layanan</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Goldenbird</strong> — Airport Transfer</td><td><span class="mono">ATF</span></td></tr>
+              <tr><td><strong>Goldenbird</strong> — Hourly</td><td><span class="mono">Hourly</span></td></tr>
+              <tr><td><strong>Goldenbird</strong> — Daily</td><td><span class="mono">Daily</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-wrap rise">
+          <table class="tbl">
+            <thead><tr><th>Rent Revamp</th><th>Layanan</th></tr></thead>
+            <tbody>
+              <tr><td><strong>BlueBird</strong> (BB)</td><td><span class="mono">Hourly</span></td></tr>
+              <tr><td><strong>Silverbird</strong> (SB)</td><td><span class="mono">Hourly</span></td></tr>
+              <tr><td><strong>Goldenbird</strong> (GB)</td><td><span class="mono">Hourly · Daily</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="callout rise"><b>Web</b> = Goldenbird saja (ATF, Hourly, Daily). <b>Rent Revamp</b> = BB &amp; SB hourly, GB hourly + daily. <b>Immediate</b> hanya SB &amp; BB; sisanya <b>schedule</b> — tanpa limit tanggal, tapi <b>daily max 6 hari</b>.</div>
+    </div>
+  </section>
+
+  <!-- 4b · COMPARISON -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">03 · Perbandingan</div>
+        <h2>Web Reservasi vs Rent Revamp</h2>
+      </div>
+      <div class="tbl-wrap rise">
+        <table class="tbl">
+          <thead><tr><th>Dimensi</th><th>Web Reservasi</th><th>Rent Revamp</th></tr></thead>
+          <tbody>
+            <tr><td><strong>API Gateway</strong></td><td>Web → <span class="mono">ocelot</span></td><td>MyBB mobile → <span class="mono">MRG API Gateway</span></td></tr>
+            <tr><td><strong>User &amp; login</strong></td><td><b>Tanpa login</b> — semua booking dipetakan ke 1 user teknis <span class="mono">BB00000001</span> (agar kompatibel dengan skema DB)</td><td><b>Wajib login</b> — user MyBB asli</td></tr>
+            <tr><td><strong>Produk</strong></td><td>Goldenbird: ATF, Hourly, Daily</td><td>BB &amp; SB (hourly), GB (hourly, daily)</td></tr>
+            <tr><td><strong>Mode order</strong></td><td>Schedule</td><td>Immediate (SB, BB) + Schedule</td></tr>
+            <tr><td><strong>Batasan</strong></td><td>—</td><td>Daily max 6 hari · schedule tanpa limit tanggal</td></tr>
+            <tr><td><strong>Payment</strong></td><td>Nicepay (payment link)</td><td>GB: cc + cash (wallet nanti) · SB &amp; BB: semua kecuali <span class="mono">cc_cp</span> &amp; <span class="mono">ecv</span></td></tr>
+            <tr><td><strong>Push HO</strong></td><td>Standard MRG</td><td><b>UPG</b> untuk SB &amp; BB · sisanya standard MRG</td></tr>
+            <tr><td><strong>Notifikasi</strong></td><td>Penuh via <b>email</b> (tanpa login → tak ada device token)</td><td><b>Push notification via Firebase (FCM)</b> · email hanya untuk e-receipt / histori perjalanan</td></tr>
+            <tr><td><strong>Tabel order</strong></td><td>Sama — di orderorchestrator</td><td>Sama — di orderorchestrator</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout rise">Yang <b>identik</b>: backend, tabel order (di <span class="mono">orderorchestrator</span>), &amp; Two-Level ID. Yang <b>beda</b>: gateway, user/login, katalog produk, mode order, metode bayar, kanal notifikasi, &amp; siapa yang push HO.</div>
+    </div>
+  </section>
+
+  <!-- 5 · ID MODEL -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">04 · Model Booking &amp; Order</div>
+        <h2>Two-Level ID Generation</h2>
+        <p class="lead">Satu <b>Booking</b> membungkus satu atau lebih <b>Order</b>. Struktur ID di-<i>expose</i> langsung ke customer &amp; support sehingga mudah ditelusuri.</p>
+      </div>
+      <div class="grid cards-2">
+        <div class="card rise">
+          <span class="tag">Web · Goldenbird ATF</span>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <span class="idbadge"><span class="p">WBG</span>-NQBMEK7P2QF01 · booking</span>
+            <span class="idbadge" style="margin-left:22px">↳ <span class="p">WBGA</span>-NQBMEK7P2QF02 · order</span>
+          </div>
+        </div>
+        <div class="card gold rise">
+          <span class="tag">Rent · Goldenbird Daily</span>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <span class="idbadge"><span class="p">MYG</span>-NQBMEK7P2QF05 · booking</span>
+            <span class="idbadge" style="margin-left:22px">↳ <span class="p">MYGL</span>-NQBMEK7P2QF06 · order</span>
+          </div>
+        </div>
+      </div>
+      <div class="callout rise"><b>Prinsip kunci:</b> ID di-generate <b>hanya setelah</b> operasi sukses (mis. charge berhasil) — <span class="mono">no ID waste</span>, tidak ada gap di sequence, tidak ada dangling order.</div>
+    </div>
+  </section>
+
+  <!-- 6 · ARCHITECTURE -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">05 · Context Diagram</div>
+        <h2>Arsitektur MRG — end to end</h2>
+      </div>
+      <div class="arch rise">
+        <div class="zone" style="--zc:#1F5FE0">
+          <div class="zt">Client &amp; Gateway</div>
+          <div class="svc">Mybb-API-Gateway</div>
+          <div class="svc">ocelot-api-gw</div>
+          <div class="svc">auth-service</div>
+        </div>
+        <div class="zone" style="--zc:#7A3FD0">
+          <div class="zt">MRG Core</div>
+          <div class="svc">service-info</div>
+          <div class="svc">orderorchestrator</div>
+          <div class="svc">session-manager</div>
+          <div class="svc">taxi-order-processor</div>
+          <div class="svc">user-service</div>
+        </div>
+        <div class="zone" style="--zc:#1E9E6A">
+          <div class="zt">Payment &amp; Partner</div>
+          <div class="svc">payment-processor</div>
+          <div class="svc">BB Payment → UPG</div>
+          <div class="svc">taxi-partner-gateway</div>
+          <div class="svc">BB-Partner</div>
+        </div>
+        <div class="zone" style="--zc:#C7891A">
+          <div class="zt">Pricing · HO · Events</div>
+          <div class="svc">BB Price → price engine</div>
+          <div class="svc">HO Gateway → HO</div>
+          <div class="svc">order / booking / payment-event</div>
+          <div class="svc">notificationcenter → email · Firebase (FCM)</div>
+          <div class="svc dim">order/tracker-stream-legacy</div>
+        </div>
+      </div>
+      <div class="flowlist rise">
+        <div class="flow"><span class="lbl">request fleet list</span><span class="arw">Gateway → service-info</span></div>
+        <div class="flow"><span class="lbl">get chosen fleet</span><span class="arw">orchestrator → session-manager</span></div>
+        <div class="flow"><span class="lbl">create order</span><span class="arw">Gateway → orderorchestrator</span></div>
+        <div class="flow"><span class="lbl">pay order</span><span class="arw">orchestrator → payment-processor</span></div>
+        <div class="flow"><span class="lbl">push HO</span><span class="arw">BB Price → HO</span></div>
+        <div class="flow"><span class="lbl">update status</span><span class="arw">BB-Partner → webhook fwd</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · ORDER FLOW -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">06 · Order Flow</div>
+        <h2>Perjalanan satu order</h2>
+      </div>
+      <div class="steps rise">
+        <div class="step"><span class="num">1</span><span class="txt"><b>Pilih fleet</b> — Gateway <span class="mono">request fleet list</span> → <span class="mono">service-info</span>, sesi dimulai di <span class="mono">session-manager</span>.</span></div>
+        <div class="step"><span class="num">2</span><span class="txt"><b>Create order</b> — <span class="mono">create order</span> → <span class="mono">orderorchestrator</span>; <span class="mono">get chosen fleet</span> dari session.</span></div>
+        <div class="step"><span class="num">3</span><span class="txt"><b>Pay order</b> — <span class="mono">pay order</span> → <span class="mono">payment-processor</span> → <span class="mono">BB Payment</span> → <span class="mono">UPG</span>.</span></div>
+        <div class="step"><span class="num">4</span><span class="txt"><b>Events</b> — <span class="mono">booking / payment / order-event</span> menyebar ke <span class="mono">orderquery</span>, <span class="mono">notificationcenter</span> (Web → email · App → push via Firebase/FCM) &amp; legacy stream.</span></div>
+        <div class="step"><span class="num">5</span><span class="txt"><b>Push HO</b> — <span class="mono">BB Price</span> push data ke <span class="mono">HO</span>; partner update status balik via <span class="mono">webhook forwarder</span>.</span></div>
+      </div>
+      <div class="callout rise">State transisi yang dilaporkan orchestrator: <span class="mono">transaction created → payment completed → transaction completed</span>.</div>
+    </div>
+  </section>
+
+  <!-- 8 · RESERVED BUDGET ECV -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">07 · Payment</div>
+        <h2>Reserved Budget ECV <span class="pill done" style="vertical-align:middle;font-size:12px">✓ Deployed</span></h2>
+        <p class="lead">Charge dipindah ke <b>depan (pre-order)</b> untuk membunuh masalah order gantung.</p>
+      </div>
+      <div class="grid cards-2">
+        <div class="card rise" style="border-top:4px solid var(--warn)">
+          <span class="tag" style="color:var(--warn)">Masalah</span>
+          <h3>Order gantung</h3>
+          <p>Charging dilakukan <b>belakang</b> → user saldo kurang tetap bisa buat banyak advance order, lolos validasi, lalu gantung saat charging aktual. Data booking &amp; payment jadi inkonsisten.</p>
+        </div>
+        <div class="card rise" style="border-top:4px solid var(--success)">
+          <span class="tag" style="color:var(--success)">Solusi</span>
+          <h3>Pre-order charge</h3>
+          <p><span class="mono">validate policy → validate balance → charge → reserve → create order</span>. Order (dan ID-nya) baru dibuat <b>setelah</b> charge sukses.</p>
+        </div>
+      </div>
+      <div class="callout rise"><b>Scope:</b> <span class="mono">fixed-tariff only</span> (hourly/daily) — bisa dihitung di awal. Argo/distance-based <b>tidak</b> termasuk karena nominal belum pasti sampai trip selesai. Refund wajib idempotent.</div>
+    </div>
+  </section>
+
+  <!-- 9 · PUSH HO -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">08 · Payment</div>
+        <h2>Push HO — ECV vs Non-ECV <span class="pill draft" style="vertical-align:middle;font-size:12px">Draft</span></h2>
+      </div>
+      <div class="vs rise">
+        <div class="col a">
+          <h3>Non-ECV</h3>
+          <div class="sub">push_ho segera</div>
+          <p>Setelah <b>payment callback</b> masuk (Nicepay → UPG → MRG), MRG langsung request Push HO ke BB Payment. Selesai.</p>
+        </div>
+        <div class="vsmid">vs</div>
+        <div class="col b">
+          <h3>ECV</h3>
+          <div class="sub">tunggu order complete</div>
+          <p>MRG menunggu status <b>order = COMPLETE</b> dulu, baru Push HO — supaya budget akurat termasuk <b>overtime, extra, tipping</b>. Mengikuti pola <b>Cititrans</b>.</p>
+        </div>
+      </div>
+      <div class="callout rise"><b>Siapa yang push HO:</b> <b>UPG</b> untuk <b>SB &amp; BB</b>, sisanya (GB) <b>standard MRG</b> — via flag <span class="mono">is_push_ho</span> (<span class="mono">"true"</span> → UPG, <span class="mono">"false"</span> → MRG).</div>
+    </div>
+  </section>
+
+  <!-- 10 · DECISIONS + ROADMAP -->
+  <section class="slide">
+    <div class="inner">
+      <div class="slide-head">
+        <div class="eyebrow">09 · Wrap-up</div>
+        <h2>Pelajaran &amp; status</h2>
+      </div>
+      <div class="grid cards-2">
+        <div class="card rise">
+          <span class="tag">Lessons Learned</span>
+          <ul class="clean" style="margin-top:6px">
+            <li><span class="ck">✓</span><div><b>Charge early</b> — cegah state inconsistency di depan.</div></li>
+            <li><span class="ck">✓</span><div><b>Fail fast</b> — validasi &amp; reject sebelum alokasi resource.</div></li>
+            <li><span class="ck">✓</span><div><b>Scope explicitly</b> — fixed vs variable tariff beda pendekatan.</div></li>
+            <li><span class="ck">✓</span><div><b>Idempotency matters</b> — refund harus aman di-retry.</div></li>
+          </ul>
+        </div>
+        <div class="card rise" style="border-top:4px solid var(--success)">
+          <span class="tag" style="color:var(--success)">Sudah Live di Production</span>
+          <ul class="clean" style="margin-top:6px">
+            <li><span class="ck">✓</span><div>API contract dengan <b>BB Payment</b></div></li>
+            <li><span class="ck">✓</span><div><b>Error handling</b>, retry &amp; monitoring push HO</div></li>
+            <li><span class="ck">✓</span><div>Topic CP <b>general rent</b> — refund/void &amp; tipping</div></li>
+            <li><span class="ck">✓</span><div>Journal routing: overtime / extra / tipping / cancel</div></li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout rise"><b>Status:</b> fitur sudah <b>rilis di production</b> (MyBB <span class="mono">v6.24</span>). Dokumentasi arsitektur sedang menyusul update.</div>
+    </div>
+  </section>
+
+  <!-- 11 · CLOSING -->
+  <section class="slide">
+    <div class="inner" style="text-align:center;align-items:center">
+      <div class="rise eyebrow" style="justify-content:center">Terima kasih</div>
+      <h1 class="rise" style="text-align:center">Diskusi &amp;<br>Pertanyaan</h1>
+      <p class="rise lead" style="text-align:center;margin-left:auto;margin-right:auto">Rent Revamp &amp; Web Reservasi — satu backend MRG, ID konsisten, payment yang tidak bikin order gantung.</p>
+      <div class="rise hint" style="justify-content:center">Lukmanul Hakim · Architecture Engineer · MRG · Bluebird Group</div>
+    </div>
+  </section>
+
+</div>
+
+<button class="navzone prev" id="navPrev" aria-label="Slide sebelumnya"></button>
+<button class="navzone next" id="navNext" aria-label="Slide berikutnya"></button>
+<div class="chrome"><div class="dots" id="dots"></div></div>
+<div class="counter" id="counter">01 / 12</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var i = 0;
+    var progress = document.getElementById('progress');
+    var counter = document.getElementById('counter');
+    var dotsWrap = document.getElementById('dots');
+
+    slides.forEach(function (s, idx) {
+      var b = document.createElement('button');
+      b.className = 'dot'; b.setAttribute('aria-label', 'Slide ' + (idx + 1));
+      b.addEventListener('click', function () { go(idx); });
+      dotsWrap.appendChild(b);
+    });
+    var dots = Array.prototype.slice.call(dotsWrap.children);
+
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function render() {
+      slides.forEach(function (s, idx) { s.classList.toggle('active', idx === i); });
+      dots.forEach(function (d, idx) { d.classList.toggle('on', idx === i); });
+      progress.style.width = (total > 1 ? (i / (total - 1)) * 100 : 100) + '%';
+      counter.textContent = pad(i + 1) + ' / ' + pad(total);
+    }
+    function go(n) { i = Math.max(0, Math.min(total - 1, n)); render(); }
+    function next() { go(i + 1); }
+    function prev() { go(i - 1); }
+
+    document.getElementById('navNext').addEventListener('click', next);
+    document.getElementById('navPrev').addEventListener('click', prev);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      else if (e.key === 'Home') { go(0); }
+      else if (e.key === 'End') { go(total - 1); }
+      else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        else if (document.exitFullscreen) document.exitFullscreen();
+      }
+    });
+
+    // touch swipe
+    var x0 = null;
+    document.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 45) { dx < 0 ? next() : prev(); }
+      x0 = null;
+    }, { passive: true });
+
+    // theme toggle
+    var root = document.documentElement;
+    document.getElementById('themeToggle').addEventListener('click', function () {
+      var cur = root.getAttribute('data-theme');
+      if (!cur) cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+    });
+
+    render();
+  })();
+</script>

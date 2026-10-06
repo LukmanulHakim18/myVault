@@ -13,8 +13,9 @@ team: MRG
 type: service-documentation
 title: Auth Service
 status: production
-created: '2025-01-05'
-updated: '2025-01-05'
+tier: P1
+created: 2025-01-05
+updated: 2026-04-07
 grpc_port: 6017
 rest_port: 8017
 repository: git.bluebird.id/mybb-ms/authservice
@@ -24,12 +25,18 @@ tech_stack:
   - redis
   - pubsub
   - jwt
+version: "1.0"
+go_version: "1.21"
+owner: alfian.maulana@bluebirdgroup.com
+slo_availability: 99.9%
+slo_latency_p99: 200ms
 ---
 # Auth Service
 
-**Team**: MRG (Meta Reservation Gateway)  
-**Status**: ✅ Production  
+**Team**: MRG (Meta Reservation Gateway)
+**Status**: ✅ Production
 **Repository**: `git.bluebird.id/mybb-ms/authservice`
+**Branch utama**: `master-huawei`
 
 ---
 
@@ -48,18 +55,87 @@ MyBB AuthService adalah microservice yang bertanggung jawab untuk mengelola aute
 
 ---
 
+## 🏷️ Service Identity
+
+| Field | Value |
+|-------|-------|
+| **Service Name** | `auth-service` |
+| **Repository** | `git.bluebird.id/mybb-ms/authservice` |
+| **Team** | MRG (Meta Reservation Gateway) |
+| **Owner / PIC** | Alfian Maulana |
+| **Contact** | alfian.maulana@bluebirdgroup.com |
+| **Tier / Criticality** | P1 |
+| **Status** | Production |
+| **Version** | 1.0 |
+| **Go Version** | 1.21 |
+
+---
+
+## 📊 SLO (Service Level Objectives)
+
+| Metric | Target |
+|--------|--------|
+| **Availability** | 99.9% |
+| **Latency p99** | < 200ms |
+| **Error Rate** | < 0.1% |
+
+---
+
 ## 🛠️ Tech Stack
 
 | Component | Technology |
 |-----------|------------|
-| Language | Go 1.24 |
+| Language | Go 1.21 |
 | Protocol | gRPC + REST (gRPC-Gateway) |
-| Database | - |
 | Cache | Redis |
 | Message Queue | Google PubSub |
 | Monitoring | Elastic APM |
 | Security | JWT (RSA), bcrypt |
 | Container | Docker, Kubernetes |
+| CI/CD | Jenkins → ArgoCD |
+
+---
+
+## 🚀 Deployment
+
+### Kubernetes
+
+| Config | Value |
+|--------|-------|
+| **Namespace (prod/stg/dev)** | `microservices` |
+| **Namespace (regress)** | `microservices-regress` |
+| **Cluster** | `cce_huawei_mybluebird_dev_bluebirdgroup_mybluebird_dev-internal-cluster` |
+| **Cloud** | Huawei Cloud |
+| **Replicas** | 2 |
+| **Resource Limits** | Not set |
+| **gRPC Port** | 6017 |
+| **REST Port** | 8017 |
+
+### CI/CD Pipeline
+
+| Stage | Branch | Keterangan |
+|-------|--------|------------|
+| Deploy to development | `development` | Auto deploy ke Huawei dev cluster |
+| Deploy to staging | `staging` | Auto deploy ke Huawei dev cluster |
+| Deploy to regress | `regress` | Auto deploy ke namespace `microservices-regress` |
+| Deploy to production | tag `v*` | Manual via ArgoCD |
+
+**ArgoCD Project**: `mybluebird`
+**ArgoCD Repo**: `git@gitssh.bluebird.id:argocd/mybluebird.git`
+
+### Health Check
+
+```yaml
+readinessProbe:
+  grpc_health_probe: :6017
+  initialDelaySeconds: 5
+  periodSeconds: 3
+
+livenessProbe:
+  grpc_health_probe: :6017
+  initialDelaySeconds: 30
+  periodSeconds: 10
+```
 
 ---
 
@@ -71,7 +147,7 @@ MyBB AuthService adalah microservice yang bertanggung jawab untuk mengelola aute
 
 ### 2. Multi-Channel OTP
 - WhatsApp
-- SMS  
+- SMS
 - Email
 
 ### 3. Security Features
@@ -97,10 +173,11 @@ MyBB AuthService adalah microservice yang bertanggung jawab untuk mengelola aute
 ### Client Libraries
 
 | Library | Version | Purpose |
-|---------|---------|---------|
+|---------|---------|---------| 
 | `fdsclient` | v0.0.5 | FDS integration |
 | `userclient` | v0.0.11 | User service integration |
 | `commonmessaging` | v0.0.19 | PubSub messaging |
+| `aphrodite` | v1.7.22 | Internal framework |
 
 ### Infrastructure
 
@@ -108,20 +185,7 @@ MyBB AuthService adalah microservice yang bertanggung jawab untuk mengelola aute
 |-----------|---------|
 | **Redis** | Session storage, token cache, OTP cache, rate limiting |
 | **Redis Stream** | Event streaming |
-
-### Repository Structure
-
-```go
-type Repository struct {
-    Redis              repoiface.RedisCache
-    TokenGenerator     repoiface.TokenGenerator
-    FDS                repoiface.FDS
-    User               repoiface.User
-    NotificationCenter repoiface.Notification
-    Legacy             repoiface.Legacy
-    RedisStream        repoiface.RedisStream
-}
-```
+| **Google PubSub** | Async notification messaging |
 
 ---
 
@@ -129,55 +193,45 @@ type Repository struct {
 
 ### gRPC Service
 
-**Package**: `authservice`  
-**Proto File**: `contract/authservice.proto`  
+**Package**: `authservice`
+**Proto File**: `contract/authservice.proto`
 **Ports**: gRPC `6017`, REST `8017`, Swagger `9017`
 
 ### Methods Overview
 
 #### Token Management
 
-| Method | Description | Interceptors |
-|--------|-------------|--------------|
-| `CreateToken` | Create access & refresh token | InputValidation |
-| `RefreshToken` | Refresh expired access token | InputValidation, MetadataAfterLoginValidation |
-| `ValidateToken` | Validate access token | InputValidation |
+| Method | Description |
+|--------|-------------|
+| `CreateToken` | Create access & refresh token |
+| `RefreshToken` | Refresh expired access token |
+| `ValidateToken` | Validate access token |
 
 #### User Validation & OTP
 
-| Method | Description | Interceptors |
-|--------|-------------|--------------|
-| `ValidateUser` | Validate user (phone/email) | InputValidation, MetadataValidation, FormatPhoneNumber |
-| `ValidateUserWithProviderList` | Validate user with OTP options | InputValidation, MetadataValidation, FormatPhoneNumber |
-| `SendOtp` | Send OTP via channel | OTT, InputValidation, MetadataValidation |
-| `ValidateOTP` | Validate OTP code | InputValidation, MetadataValidation |
+| Method | Description |
+|--------|-------------|
+| `ValidateUser` | Validate user (phone/email) |
+| `ValidateUserWithProviderList` | Validate user with OTP options |
+| `SendOtp` | Send OTP via channel |
+| `ValidateOTP` | Validate OTP code |
 
 #### Authentication
 
-| Method | Description | Interceptors |
-|--------|-------------|--------------|
-| `RegisterUser` | Register new user | InputValidation, MetadataValidation |
-| `Login` | Login with password | InputValidation, MetadataValidation |
-| `Logout` | Logout (revoke tokens) | InputValidation, MetadataAfterLoginValidation |
-| `RevokeAllRefreshToken` | Logout from all devices | MetadataAfterLoginValidation |
+| Method | Description |
+|--------|-------------|
+| `RegisterUser` | Register new user |
+| `Login` | Login with password |
+| `Logout` | Logout (revoke tokens) |
+| `RevokeAllRefreshToken` | Logout from all devices |
 
 #### Password Management
 
-| Method | Description | Interceptors |
-|--------|-------------|--------------|
-| `ChangePassword` | Change password (logged in) | InputValidation, MetadataAfterLoginValidation |
-| `ForgotPassword` | Request password reset | InputValidation, MetadataAfterLoginValidation |
-| `ResetPassword` | Reset password with token | InputValidation |
-
-#### Utility
-
-| Method | Description | Interceptors |
-|--------|-------------|--------------|
-| `HealthCheck` | Health check | - |
-| `GetTimeSync` | Get server time | - |
-| `MigrateToken` | Migrate legacy token | InputValidation |
-| `EncryptPass` | Encrypt password (internal) | - |
-| `DecryptPass` | Decrypt password (internal) | - |
+| Method | Description |
+|--------|-------------|
+| `ChangePassword` | Change password (logged in) |
+| `ForgotPassword` | Request password reset |
+| `ResetPassword` | Reset password with token |
 
 ---
 
@@ -209,152 +263,29 @@ Lihat detail lengkap di: [[authentication-flows|Authentication Flows]]
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### Token & Session
 
-```env
-# Application
-APP_NAME=Mybb-Auth-Service
-GRPC_PORT=6017
-REST_PORT=8017
-SWAGGER_PORT=9017
+| Setting | Env Variable | Default |
+|---------|--------------|---------|
+| Access Token TTL | `DURATION_ACCESS_TOKEN_ALIVE` | 2h |
+| Refresh Token TTL | `DURATION_REFRESH_TOKEN_ALIVE` | 16h |
+| Refresh Token Salt | `SALT_REFRESH_TOKEN` | mybb-auth |
+| Private Key Path | `JWT_PRIVATE_KEY_PATH` | cert/private_key.pem |
 
-# JWT
-JWT_PRIVATE_KEY_PATH=cert/private_key.pem
-DURATION_ACCESS_TOKEN_ALIVE=2h
-DURATION_REFRESH_TOKEN_ALIVE=16h
-SALT_REFRESH_TOKEN=mybb-auth
+### OTP
 
-# Redis
-REDIS_HOST=172.26.11.40
-REDIS_PORT=6379
-REDIS_DATABASE=11
-REDIS_PASSWORD=
+| Setting | Env Variable | Default |
+|---------|--------------|---------|
+| Max OTP Attempts | `SEND_OTP_MAX_ATTEMPT` | 5 |
+| Resend Cooldown | `RESEND_OTP_AFTER` | 7s |
+| OTP Valid Duration | `VALID_OTP_DURATION` | 24h |
 
-# OTP Settings
-SEND_OTP_MAX_ATTEMPT=5
-RESEND_OTP_AFTER=7s
-VALID_OTP_DURATION=24h
+### One Time Token (OTT)
 
-# One Time Token (OTT) - Password Encryption
-OTT_FEATURE=false
-OTT_TOLERANCE=30s
-OTT_KEY=
-
-# FDS Service
-FDS_HOST=fds-service
-FDS_PORT=6001
-
-# User Service
-USER_HOST=user-service
-USER_PORT=6015
-
-# Notification (PubSub)
-NOTIFICATION_CENTER_PROJECT_ID=mybluebird
-GOOGLE_APPLICATION_CREDENTIALS=cert/credentials.json
-PUBSUB_ENV=stg
-
-# APM
-ELASTIC_APM_SERVER_URL=
-ELASTIC_APM_SERVICE_NAME=mybb-auth-service
-ELASTIC_APM_ENVIRONMENT=DEV
-```
-
----
-
-## 📂 Project Structure
-
-```
-authservice/
-├── main.go                    # Entry point
-├── go.mod                     # Dependencies
-├── Dockerfile                 # Container build
-├── Jenkinsfile                # CI/CD pipeline
-│
-├── cert/                      # Certificates
-│   ├── private.pem            # JWT private key (RSA)
-│   ├── public.pem             # JWT public key
-│   └── login_partner.json     # Partner credentials
-│
-├── config/                    # Configuration
-│   ├── default.go
-│   ├── logger/
-│   └── repository/
-│
-├── constant/                  # Constants
-│   ├── constant.go
-│   ├── custom_header.go
-│   └── token_prefix.go
-│
-├── contract/                  # API contracts
-│   ├── authservice.proto
-│   ├── authservice.pb.go
-│   ├── authservice_grpc.pb.go
-│   ├── authservice.pb.gw.go
-│   ├── authservice.swagger.json
-│   ├── mapper.go
-│   └── validate_input.go
-│
-├── model/                     # Domain models
-│   └── dto_repo_redis.go
-│
-├── repository/                # Data access layer
-│   ├── base_repository.go
-│   ├── repoiface/             # Interfaces
-│   ├── repomock/              # Mocks
-│   ├── redis/                 # Redis implementation
-│   ├── redisstream/           # Redis Stream
-│   ├── fds/                   # FDS client
-│   ├── user/                  # User service client
-│   ├── notification/          # Notification client
-│   ├── legacy/                # Legacy system client
-│   └── tokengen/              # Token generator
-│
-├── usecase/                   # Business logic (with tests)
-│   ├── base_usecase.go
-│   ├── login.go
-│   ├── register_user.go
-│   ├── create_token.go
-│   ├── refresh_token.go
-│   ├── validate_access_token.go
-│   ├── send_otp.go
-│   ├── validate_otp.go
-│   ├── change_password.go
-│   ├── forgot_password.go
-│   ├── reset_password.go
-│   └── ... (+ test files)
-│
-├── transport/                 # Transport layer
-│   ├── base_transport.go
-│   └── ... (handlers)
-│
-├── server/                    # Server setup
-│   ├── grpc.go
-│   ├── rest.go
-│   └── swagger.go
-│
-├── util/                      # Utilities
-│   ├── interceptor/
-│   ├── error/
-│   ├── key_generator.go
-│   └── util.go
-│
-├── doc/                       # Documentation
-│   └── flow_sequence_diagram.svg
-│
-├── _doc/                      # Detailed docs
-│   ├── 01-PROJECT-OVERVIEW.md
-│   ├── 02-ARCHITECTURE.md
-│   ├── 03-PROJECT-STRUCTURE.md
-│   ├── 04-FEATURES.md
-│   ├── 05-AUTHENTICATION-FLOWS.md
-│   ├── 06-API-ENDPOINTS.md
-│   ├── 07-DEPENDENCIES.md
-│   ├── 08-CONFIGURATION.md
-│   └── 09-DEPLOYMENT.md
-│
-└── k8s/                       # Kubernetes manifests
-    └── huawei-application.yaml
-```
+| Setting | Env Variable | Default |
+|---------|--------------|---------|
+| OTT Feature flag | `OTT_FEATURE` | false |
+| OTT Tolerance | `OTT_TOLERANCE` | 30s |
 
 ---
 
@@ -371,9 +302,69 @@ authservice/
 - **Reset tokens**: 1-hour expiration, one-time use
 
 ### Fraud Prevention
-- **FDS integration**: Phone number fraud check
+- **FDS integration**: Phone number fraud check on ValidateUser
 - **Attempt counters**: Track suspicious patterns
 - **Blacklisting**: Invalid tokens cannot be reused
+
+### Secrets di Kubernetes
+| Secret | Isi |
+|--------|-----|
+| `secret-auth-service` | `REDIS_PASSWORD` |
+| `secret-jwt-private-key` | RSA private key |
+| `secret-jwt-public-key` | RSA public key |
+| `secret-google-pubsub` | GCP service account credentials |
+
+---
+
+## 🚨 Runbook & Incident
+
+| Resource | Link |
+|----------|------|
+| **On-call PIC** | Alfian Maulana (alfian.maulana@bluebirdgroup.com) |
+| **Runbook** | _TODO: tambahkan link runbook_ |
+| **Kibana / APM** | `ELASTIC_APM_SERVICE_NAME=mybb-auth-service` |
+| **Monitoring** | Elastic APM + Grafana |
+
+### Common Issues
+- **Token invalid / expired**: Cek Redis connection, pastikan TTL config benar
+- **OTP tidak terkirim**: Cek PubSub connectivity dan Notification Center
+- **Login gagal massal**: Cek User Service availability via gRPC
+
+---
+
+## 📂 Project Structure
+
+```
+authservice/
+├── main.go
+├── go.mod
+├── Dockerfile
+├── Jenkinsfile
+├── cert/                   # JWT keys & partner credentials
+├── config/                 # App configuration
+├── constant/               # Constants
+├── contract/               # Proto + generated gRPC files
+├── model/                  # Domain models
+├── repository/             # Data access layer
+│   ├── repoiface/          # Interfaces
+│   ├── repomock/           # Mocks
+│   ├── redis/
+│   ├── redisstream/
+│   ├── fds/
+│   ├── user/
+│   ├── notification/
+│   ├── legacy/
+│   └── tokengen/
+├── usecase/                # Business logic + unit tests
+├── transport/              # Transport layer (gRPC handlers)
+├── server/                 # gRPC + REST + Swagger server setup
+├── util/                   # Interceptors, error, utilities
+├── k8s/                    # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── huawei-application.yaml
+└── doc/                    # Flow diagrams
+```
 
 ---
 
@@ -392,5 +383,5 @@ authservice/
 
 ---
 
-*Last Updated*: 2025-01-05  
-*Generated from*: Repository analysis + existing _doc folder
+*Last Updated*: 2026-04-07
+*Updated by*: Claude (dari repo analysis)

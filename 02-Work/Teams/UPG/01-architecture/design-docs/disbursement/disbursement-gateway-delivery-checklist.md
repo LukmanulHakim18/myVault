@@ -14,7 +14,7 @@ type: checklist
 status: active
 owner: lukmanul.hakim
 created: "2026-07-08"
-updated: "2026-07-09"
+updated: "2026-07-14"
 related:
   - "[[disbursement-gateway-requirements]]"
   - "[[disbursement-gateway-design]]"
@@ -37,7 +37,7 @@ related:
 
 **Legenda**: 🔴 blocking · ⏳ long lead-time · 🟢 Track A · 🟡 Track B · ⭐ prasyarat produksi
 
-> **Status implementasi kode (2026-07-09):** repo `git.bluebird.id/upg/disbursementservice`, 4 commit lokal (belum push — nunggu default branch GitLab). **12/16 usecase GREEN via TDD** (3 read-only + 8 Admin API + `Disburse`). Sisa panic: `DisburseBatch`, `InquiryBeneficiary`, `BalanceInquiry`, `HistoryList`. **OCBC adapter nyata (HTTP/signature/mTLS) belum ada** — semua test lulus via mock; M3 baru "orkestrasi tervalidasi", bukan "OCBC benar-benar bisa dihubungi".
+> **Status implementasi kode (2026-07-14):** repo `git.bluebird.id/upg/disbursementservice`, **12 commit, 8 ahead of `origin/master`** (sudah push ke origin). **15/16 usecase GREEN via TDD** (3 read-only + 8 Admin API + `Disburse` + `DisburseBatch` + `InquiryBeneficiary` + `BalanceInquiry`; `go test ./usecase` PASS). **Sisa panic: `HistoryList` saja.** **OCBC adapter nyata (HTTP/signature/mTLS) belum ada** — `repository/ocbc/implementor.go` masih 3 `panic("unimplemented")`; semua test lulus via mock/fake; M3 baru "orkestrasi tervalidasi", bukan "OCBC benar-benar bisa dihubungi".
 
 ---
 
@@ -82,14 +82,14 @@ related:
 - [x] Tabel **`channel_registry`** — entitlement dinormalisasi ke 4 tabel (`provider`/`source_account`/`transfer_method`/`route`, bukan kolom `allowed_banks`/`allowed_transfer_methods` — lihat design §4), originator PPATK, `api_token_hash`, webhook (velocity columns **TIDAK** dibuat — OQ-5 dropped)
 - [x] Tabel **`disbursements`** (`UNIQUE(channel, idempotency_key)`, `partner_reference_no` unik, raw req/resp jsonb audit) — DDL manual (`model/schema.sql`, belum ada tool migrasi)
 - [x] Tabel **`disbursement_batches`** + **`bank_metadata`** (kosong, diisi DATA-1) + **`outbox`**
-- [x] **Admin API internal** (`DisbursementAdmin` RPC di-merge ke `service Disbursement` — standar eneraplus 1-proto-1-service): `RegisterClient`, `IssueToken`/`RotateToken`, `RegisterProvider`, `RegisterSourceAccount`, `AddRoute`, `DisableRoute`, `AddTransferMethod` — **8/8 usecase GREEN via TDD**. REST `/internal/admin/*`
+- [x] **Admin API internal** (`DisbursementAdmin` RPC di-merge ke `service Disbursement` — standar eneraplus 1-proto-1-service): `RegisterChannel` (dulu `RegisterClient`; commit 371cac8 standarisasi ke `channel_id`/`transfer_id`), `IssueToken`/`RotateToken`, `RegisterProvider`, `RegisterSourceAccount`, `AddRoute`, `DisableRoute`, `AddTransferMethod` — **8/8 usecase GREEN via TDD**. REST `/internal/admin/*`
 - [x] **Penerbitan token**: generate opaque acak (32-byte base62) → `api_token_hash`=SHA-256(hex) → plaintext sekali; `RotateToken` = baru+invalidate — teruji
 - [x] Entitlement **opt-in** (`AddRoute` eksplisit per client×source_account×method, `DisableRoute`=soft-disable; tak ada auto-allow-all) — teruji
 - [ ] **Auth** middleware per channel (B5): cocokkan `api_token_hash` dari metadata/header → set `channel` context — token issuance **sudah ada**, middleware intersepsi request **belum**
 - [x] **Idempotency logic** (`Disbursement.GetByIdempotencyKey` + `model.ErrNotFound` sentinel; idempotent replay di `Disburse`) — teruji · [ ] **Redis distributed lock** anti double-submit — **belum** (Redis interface masih `HealthCheck` saja)
 - [x] **Domain model** + **status FSM** enum (CREATED→SUBMITTED→PENDING→SUCCESS/FAILED/CANCELLED/REFUNDED/NEEDS_INVESTIGATION/REJECTED) — dipakai konsisten di `Disburse`/`GetStatus`; guard transisi FSM formal belum ada
 - [ ] **Validator limit teknis** (amount min/max + jam operasional per method) — entitlement (B6) sudah ✅ via `findRoute`, limit teknis **belum**
-- [x] Kontrak **gRPC** 8 RPC consumer (`GetAllowedRoutes`, `InquiryBeneficiary`, `Disburse`, `DisburseBatch`, `GetStatus`, `GetBatchStatus`, `BalanceInquiry`, `HistoryList`) — proto+REST lengkap; **usecase**: `GetAllowedRoutes`/`GetStatus`/`GetBatchStatus`/`Disburse` GREEN, 4 sisanya masih panic
+- [x] Kontrak **gRPC** 8 RPC consumer (`GetAllowedRoutes`, `InquiryBeneficiary`, `Disburse`, `DisburseBatch`, `GetStatus`, `GetBatchStatus`, `BalanceInquiry`, `HistoryList`) — proto+REST lengkap; **usecase**: 7/8 GREEN (`GetAllowedRoutes`/`InquiryBeneficiary`/`Disburse`/`DisburseBatch`/`GetStatus`/`GetBatchStatus`/`BalanceInquiry`); **`HistoryList` masih panic**
 
 ---
 
@@ -111,10 +111,10 @@ related:
 
 ## M4 — Batch (broker-orchestrated — CONF-1: tak ada batch endpoint OCBC)
 
-- [ ] **DisburseBatch**: validate-all-first (format, entitlement, limit, **total nominal vs saldo** di gate) → tolak seluruh batch bila ada invalid
-- [ ] Eksekusi **per-item best-effort** (loop N call OCBC), `partner_reference_no` per-item, **idempotency batch-level + per-item**
-- [ ] Ack sinkron: per-item ACCEPTED/REJECTED + `batchId`; status final per-item via event/polling/webhook
-- [ ] `GetBatchStatus` (agregat + per-item)
+- [~] **DisburseBatch**: validate-all-first → ALL-OR-NOTHING reject bila ada item invalid — **format + entitlement (B6) DONE (teruji via mock)**; **limit teknis + total-nominal-vs-saldo di gate BELUM** (butuh validator + BalanceInquiry ke OCBC nyata)
+- [~] Eksekusi **per-item best-effort** (loop pola `Disburse`: Create→Inquiry+Submit→UpdateStatus→emit), `partner_reference_no` per-item, **idempotency batch-level** teruji — per-item key + **call OCBC nyata belum** (adapter stub)
+- [x] Ack sinkron: per-item ACCEPTED + `batchId`; status final per-item async — teruji
+- [x] `GetBatchStatus` (agregat + per-item) — GREEN
 
 ---
 
@@ -138,9 +138,9 @@ related:
 ## M6 — Broker Surface & Query
 
 - [ ] **Fasad SNAP REST** (`delivery/http`) — mirror operasi gRPC untuk konsumen SNAP
-- [ ] **BalanceInquiry** + **HistoryList** pass-through (consumer-facing per PRD)
+- [~] **BalanceInquiry** usecase GREEN (teruji via mock; call OCBC nyata belum) · **HistoryList** masih panic — pass-through consumer-facing per PRD
 - [ ] **Error taxonomy** terklasifikasi (retriable vs final vs needs-escalation)
-- [ ] `GetAllowedRoutes` end-to-end (client bisa tahu whitelist bank+method-nya)
+- [~] `GetAllowedRoutes` — usecase GREEN; end-to-end di server nyata belum diverifikasi (client bisa tahu whitelist bank+method-nya)
 
 ---
 
@@ -157,7 +157,7 @@ related:
 
 ## M8 — Testing ⭐
 
-- [~] Unit test usecase — **12/16 GREEN via TDD** (`GetAllowedRoutes`/`GetStatus`/`GetBatchStatus`/`Disburse` + 8 Admin API). Sisa panic: `DisburseBatch`, `InquiryBeneficiary`, `BalanceInquiry`, `HistoryList`. Validator/FSM/adapter integration test **belum** (adapter masih stub)
+- [~] Unit test usecase — **15/16 GREEN via TDD** (7/8 consumer + 8 Admin API; `go test ./usecase` PASS). Sisa panic: `HistoryList` saja. Validator/FSM/adapter integration test **belum** (adapter masih stub)
 - [ ] **Sandbox** test channel Track A (success / pending / timeout / not-found)
 - [ ] Verifikasi signature via **Postman** (`/v1.0/transaction-signature/b2b`)
 - [ ] Test **idempotency & concurrency** (double-submit, duplicate `X-EXTERNAL-ID` & `partnerReferenceNo`)

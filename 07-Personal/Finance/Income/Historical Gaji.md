@@ -9,8 +9,8 @@ type: data
 title: Historical Income - Slip Gaji Bluebird
 source: Outlook Mbox
 created: '2025-01-02'
-updated: '2026-02-27'
-data_range: Jun 2023 - Feb 2026
+updated: '2026-06-05'
+data_range: Jun 2023 - May 2026
 current_position: IT Senior Engineer 1
 current_grade: 15-1
 ---
@@ -101,8 +101,17 @@ Data slip gaji lengkap dari **Juni 2023 - Desember 2025** (31 bulan).
 | Bulan | Posisi | Gaji Pokok | Insentif TJK | Insentif Fungsional | Insentif Kehadiran | THR | Gaji Kotor | Total Potongan | **Gaji Bersih** |
 |-------|--------|------------|--------------|---------------------|-------------------|-----|------------|----------------|-----------------| 
 | Feb | IT Sr Eng 1 | 15,100,000 | 1,887,500 | 3,000,000 | 750,000 | - | 20,645,090 | 2,151,081 | **18,581,419** |
+| Mei | IT Sr Eng 1 | 14,400,000 | 1,800,000 | 3,000,000 | 750,000 | - | 20,656,080 | 2,882,429 | **17,773,651** |
 
-**Total 2026 (s.d. Feb):** Rp 18,581,419
+**Total 2026 (tercatat: Feb & Mei):** Rp 36,355,070 — ⚠️ Mar & Apr belum tercatat
+
+> **Rincian slip Mei 2026 (Period 05/2026):**
+> - Penghasilan: Gaji Pokok 14,400,000 · Insentif TJK 1,800,000 · Insentif Fungsional 3,000,000 · Insentif Kehadiran 750,000 · SPPBG 5,000
+> - Potongan karyawan: PPH21 1,652,486 · BPJS TK 398,863 · BPJS KS 120,000
+> - Kewajiban perusahaan (di-gross-up): BPJS JKK 182,880 · BPJS JKM 43,200 · BPJS KS 480,000
+> - ⚠️ **Kode Tanggungan berubah: K1** (Kawin, 1 tanggungan) — sebelumnya TK1. Cek dampak PTKP/PPH21.
+> - ⚠️ **Gaji Pokok turun** vs Feb 2026 (15,100,000 → 14,400,000). Konfirmasi apakah Feb ada rapel/penyesuaian.
+> - NO BPJS TK: 23109279879 · NO BPJS KS: 0000020086187
 
 ---
 
@@ -171,7 +180,8 @@ Des 2025: Rp 19.4 jt ━━━━━━━━━━━━━━━━━━━�
 - Data di-extract dari 31 PDF slip gaji via Outlook mbox
 - BPJS TK & KS mulai dipotong September 2024
 - **Promosi ke IT Senior Engineer 1** efektif Desember 2025
-- Update terakhir: 2 Januari 2025
+- **Mei 2026:** Kode Tanggungan tercatat **K1** (sebelumnya TK1) — perubahan status menikah; Gaji Pokok Rp 14,4 jt (Feb 2026 Rp 15,1 jt — perlu cek penyesuaian)
+- Update terakhir: 5 Juni 2026
 
 ---
 

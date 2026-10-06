@@ -1,0 +1,4 @@
+- test upg apa urgensinya
+- test ewalet yang non whitelist aja apa ada consern ?
+- test user whitelist untuk cc untuk mekanisme incremental.
+- implement ke fraudster kirim bbid ke mybb secara manual.
